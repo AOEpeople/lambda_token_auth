@@ -32,7 +32,7 @@ func (a *AwsConsumer) ReadConfiguration(config *Config, bucket string, key strin
 	})
 	decoder := json.NewDecoder(resp.Body)
 	if err := decoder.Decode(config); err != nil {
-		return fmt.Errorf("Unable to read RULES input.\n Error: %v", err)
+		return fmt.Errorf("Unable to read RULES inputClaims.\n Error: %v", err)
 	}
 	defer resp.Body.Close()
 	return nil

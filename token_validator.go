@@ -6,6 +6,7 @@ import (
 	"github.com/dgrijalva/jwt-go"
 	"log"
 	"reflect"
+	"strings"
 )
 
 type TokenValidatorInterface interface {
@@ -61,7 +62,7 @@ func (t *TokenValidator) MatchClaims(tokenClaims *GitlabClaims, ruleClaims *Gitl
 	for i := 0; i < ruleClaimsRefection.NumField(); i++ {
 		ruleClaimsFieldValue := reflect.Value(ruleClaimsRefection.Field(i)).String()
 		tokenClaimsFieldValue := reflect.Value(tokenClaimsRefection.Field(i)).String()
-		if ruleClaimsFieldValue != "" && ruleClaimsFieldValue != tokenClaimsFieldValue {
+		if ruleClaimsFieldValue != "" && strings.Compare(ruleClaimsFieldValue,tokenClaimsFieldValue) != 0 {
 			match = false
 			break
 		}
@@ -71,7 +72,7 @@ func (t *TokenValidator) MatchClaims(tokenClaims *GitlabClaims, ruleClaims *Gitl
 
 func (t *TokenValidator) ValidateClaimsForRule(tokenClaims *GitlabClaims, requestedRole string, rules []Rule) (*Rule, error) {
 	for _, rule := range rules {
-		if rule.Role == requestedRole && t.MatchClaims(tokenClaims, &rule.ClaimValues) {
+		if strings.Compare(rule.Role, requestedRole) == 0 && t.MatchClaims(tokenClaims, &rule.ClaimValues) {
 			return &rule, nil
 		}
 	}

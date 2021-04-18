@@ -4,10 +4,9 @@ import (
 	"context"
 	"fmt"
 	"github.com/dgrijalva/jwt-go"
+	"log"
 	"net/http"
 )
-
-type AuthorizationHandler interface {}
 
 // see https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-develop-integrations-lambda.html
 type HandleResponse struct {
@@ -18,14 +17,15 @@ type HandleResponse struct {
 }
 
 type HandleEvent struct {
-	Headers struct {
+	Headers HandleEventHeaders `json:"headers"`
+	Query HandleEventQuery `json:"queryStringParameters"`
+}
+type HandleEventHeaders struct {
 		Authorization string `json:"authorization"`
 		Accept        string `json:"accept"`
-	} `json:"headers"`
-
-	Query struct {
-		Role string `json:"role"`
-	} `json:"queryStringParameters"`
+}
+type HandleEventQuery struct {
+	Role string `json:"role"`
 }
 
 type GitlabClaims struct {
@@ -58,8 +58,39 @@ type Rule struct {
 
 type Handler func(ctx context.Context, event HandleEvent) (HandleResponse, error)
 
-func NewHandler(auth AuthorizationHandler) Handler {
+func NewHandler(auth Authorizer) Handler {
 	return func(ctx context.Context, event HandleEvent) (HandleResponse, error) {
-		return RespondError(fmt.Errorf("Invalid arguments."), http.StatusInternalServerError)
+
+		if event.Headers.Authorization == "" || event.Query.Role == "" {
+			return RespondError(fmt.Errorf("invalid arguments"), http.StatusBadRequest)
+		}
+
+		log.Printf("Retrieved HandleEvent for Role %s\n%s", event.Query.Role, event.Headers.Authorization)
+
+		claims, err := auth.TokenValidator().RetrieveClaimsFromToken(event.Headers.Authorization)
+		if err != nil {
+			return RespondError(err, http.StatusUnauthorized)
+		}
+
+		log.Printf("Validated Token")
+
+		role, err := auth.TokenValidator().ValidateClaimsForRule(claims, event.Query.Role, auth.Config().Rules)
+		if err != nil {
+			return RespondError(err, http.StatusInternalServerError)
+		} else if role == nil {
+			return RespondError(fmt.Errorf("unable to find matching role for the given token"), http.StatusUnauthorized)
+		}
+
+		log.Printf("Retrieved request from %s to assume role %s", claims.UserLogin, role.Role)
+		credentials, err := auth.AwsConsumer().AssumeRole(role, claims.UserLogin)
+		if err != nil {
+			return RespondError(err, http.StatusInternalServerError)
+		}
+
+		if event.Headers.Accept == "text/x-shellscript" {
+			return RespondShellscript(credentials)
+		}
+
+		return RespondJson(credentials)
 	}
 }
