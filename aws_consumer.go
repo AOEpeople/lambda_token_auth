@@ -7,11 +7,13 @@ import (
 	"github.com/aws/aws-sdk-go/aws/session"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/sts"
+	"regexp"
 )
 
 type AwsConsumerInterface interface {
 	ReadConfiguration(config *Config, bucket string, key string) error
 	AssumeRole(rule *Rule, name string) (*sts.Credentials, error)
+	ValidateRole(role string) bool
 }
 
 type AwsConsumer struct {
@@ -59,4 +61,9 @@ func (a *AwsConsumer) AssumeRole(rule *Rule, name string) (*sts.Credentials, err
 		return nil, fmt.Errorf("unable to perform sts.AssumeRole: %w", err)
 	}
 	return result.Credentials, nil
+}
+
+func (a *AwsConsumer) ValidateRole(role string) bool {
+	validRole := regexp.MustCompile(`^arn:aws:iam::\d{12}:role/[a-zA-Z0-9-_]+$`)
+	return validRole.MatchString(role)
 }

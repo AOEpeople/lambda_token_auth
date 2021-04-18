@@ -57,6 +57,10 @@ func NewHandler(auth Authorizer) Handler {
 			return RespondError(fmt.Errorf("invalid arguments"), http.StatusBadRequest)
 		}
 
+		if !auth.AwsConsumer().ValidateRole(event.Query.Role) {
+			return RespondError(fmt.Errorf("invalid IAM role ARN"), http.StatusBadRequest)
+		}
+
 		log.Printf("Retrieved Event for Role %s\n%s", event.Query.Role, event.Headers.Authorization)
 
 		claims, err := auth.TokenValidator().RetrieveClaimsFromToken(event.Headers.Authorization)

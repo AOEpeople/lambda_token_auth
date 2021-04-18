@@ -47,6 +47,7 @@ func TestAuthorizationHandler(t *testing.T) {
 		tokenValidator.EXPECT().RetrieveClaimsFromToken(gomock.Eq("token")).Return(&rules[0].ClaimValues, nil)
 		tokenValidator.EXPECT().ValidateClaimsForRule(gomock.Eq(&rules[0].ClaimValues), gomock.Eq("one"), gomock.Eq(rules)).Return(&rules[0], nil)
 		awsConsumer := mock.NewMockAwsConsumerInterface(ctrl)
+		awsConsumer.EXPECT().ValidateRole(gomock.Eq("one")).Return(true)
 		awsConsumer.EXPECT().AssumeRole(gomock.Eq(&rules[0]), gomock.Eq("hans")).Return(&sts.Credentials{}, nil)
 
 		authorizer := mock.NewMockAuthorizer(ctrl)
@@ -55,6 +56,7 @@ func TestAuthorizationHandler(t *testing.T) {
 		})
 		authorizer.EXPECT().TokenValidator().Return(tokenValidator)
 		authorizer.EXPECT().TokenValidator().Return(tokenValidator)
+		authorizer.EXPECT().AwsConsumer().Return(awsConsumer)
 		authorizer.EXPECT().AwsConsumer().Return(awsConsumer)
 
 		handler := auth.NewHandler(authorizer)

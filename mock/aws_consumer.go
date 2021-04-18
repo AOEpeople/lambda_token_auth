@@ -63,3 +63,17 @@ func (mr *MockAwsConsumerInterfaceMockRecorder) ReadConfiguration(config, bucket
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ReadConfiguration", reflect.TypeOf((*MockAwsConsumerInterface)(nil).ReadConfiguration), config, bucket, key)
 }
+
+// ValidateRole mocks base method.
+func (m *MockAwsConsumerInterface) ValidateRole(role string) bool {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ValidateRole", role)
+	ret0, _ := ret[0].(bool)
+	return ret0
+}
+
+// ValidateRole indicates an expected call of ValidateRole.
+func (mr *MockAwsConsumerInterfaceMockRecorder) ValidateRole(role interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateRole", reflect.TypeOf((*MockAwsConsumerInterface)(nil).ValidateRole), role)
+}
