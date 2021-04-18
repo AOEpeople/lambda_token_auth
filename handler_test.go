@@ -29,7 +29,7 @@ func TestAuthorizationHandler(t *testing.T) {
 	})
 
 
-	t.Run("args invalid", func(t *testing.T) {
+	t.Run("args valid", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
