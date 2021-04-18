@@ -22,7 +22,7 @@ func TestAuthorizationHandler(t *testing.T) {
 
 		authorizer := mock.NewMockAuthorizer(ctrl)
 		handler := auth.NewHandler(authorizer)
-		response, err := handler(ctx, auth.HandleEvent{})
+		response, err := handler(ctx, auth.Event{})
 		assert.NoError(t, err)
 		assert.Equal(t, "invalid arguments", response.Body)
 		assert.Equal(t, http.StatusBadRequest, response.StatusCode)
@@ -58,9 +58,9 @@ func TestAuthorizationHandler(t *testing.T) {
 		authorizer.EXPECT().AwsConsumer().Return(awsConsumer)
 
 		handler := auth.NewHandler(authorizer)
-		event := auth.HandleEvent{
-			Headers: auth.HandleEventHeaders{ Authorization: "token", Accept: "application/json"},
-			Query: auth.HandleEventQuery{ Role: "one" },
+		event := auth.Event{
+			Headers: auth.EventHeaders{ Authorization: "token", Accept: "application/json"},
+			Query: auth.EventQuery{ Role: "one" },
 		}
 		response, err := handler(ctx, event)
 		assert.NoError(t, err)

@@ -8,23 +8,15 @@ import (
 	"net/http"
 )
 
-// see https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-develop-integrations-lambda.html
-type HandleResponse struct {
-	IsBase64Encoded bool `json:"isBase64Encoded,omitempty"`
-	StatusCode      int  `json:"statusCode,omitempty"`
-	Headers map[string]string `json:"headers,omitempty"`
-	Body string `json:"body,omitempty"`
+type Event struct {
+	Headers EventHeaders `json:"headers"`
+	Query   EventQuery   `json:"queryStringParameters"`
 }
-
-type HandleEvent struct {
-	Headers HandleEventHeaders `json:"headers"`
-	Query HandleEventQuery `json:"queryStringParameters"`
+type EventHeaders struct {
+	Authorization string `json:"authorization"`
+	Accept        string `json:"accept"`
 }
-type HandleEventHeaders struct {
-		Authorization string `json:"authorization"`
-		Accept        string `json:"accept"`
-}
-type HandleEventQuery struct {
+type EventQuery struct {
 	Role string `json:"role"`
 }
 
@@ -56,16 +48,16 @@ type Rule struct {
 	ClaimValues GitlabClaims `json:"claim_values"`
 }
 
-type Handler func(ctx context.Context, event HandleEvent) (HandleResponse, error)
+type Handler func(ctx context.Context, event Event) (HandlerResponse, error)
 
 func NewHandler(auth Authorizer) Handler {
-	return func(ctx context.Context, event HandleEvent) (HandleResponse, error) {
+	return func(ctx context.Context, event Event) (HandlerResponse, error) {
 
 		if event.Headers.Authorization == "" || event.Query.Role == "" {
 			return RespondError(fmt.Errorf("invalid arguments"), http.StatusBadRequest)
 		}
 
-		log.Printf("Retrieved HandleEvent for Role %s\n%s", event.Query.Role, event.Headers.Authorization)
+		log.Printf("Retrieved Event for Role %s\n%s", event.Query.Role, event.Headers.Authorization)
 
 		claims, err := auth.TokenValidator().RetrieveClaimsFromToken(event.Headers.Authorization)
 		if err != nil {
