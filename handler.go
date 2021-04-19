@@ -1,4 +1,4 @@
-package lambda_token_auth
+package auth
 
 import (
 	"context"
@@ -8,39 +8,48 @@ import (
 	"net/http"
 )
 
+// Event all data we expect within a request
 type Event struct {
 	Headers EventHeaders `json:"headers"`
 	Query   EventQuery   `json:"queryStringParameters"`
 }
+
+// EventHeaders all header fields we expect in a request
 type EventHeaders struct {
 	Authorization string `json:"authorization"`
 	Accept        string `json:"accept"`
 }
+
+// EventQuery all query fields we expect in a request
 type EventQuery struct {
 	Role string `json:"role"`
 }
 
+// GitlabClaims all claim fields a token from Gitlab could have
 type GitlabClaims struct {
-	NamespaceId          string `json:"namespace_id,omitempty"`
+	NamespaceID          string `json:"namespace_id,omitempty"`
 	NamespacePath        string `json:"namespace_path,omitempty"`
-	ProjectId            string `json:"project_id,omitempty"`
+	ProjectID            string `json:"project_id,omitempty"`
 	ProjectPath          string `json:"project_path,omitempty"`
-	UserId               string `json:"user_id,omitempty"`
+	UserID               string `json:"user_id,omitempty"`
 	UserLogin            string `json:"user_login,omitempty"`
 	UserEmail            string `json:"user_email,omitempty"`
-	PipelineId           string `json:"pipeline_id,omitempty"`
-	JobId                string `json:"job_id,omitempty"`
+	PipelineID           string `json:"pipeline_id,omitempty"`
+	JobID                string `json:"job_id,omitempty"`
 	Environment          string `json:"environment,omitempty"`
 	EnvironmentProtected string `json:"environment_protected,omitempty"`
 	jwt.StandardClaims
 }
 
+// Config holds all configuration for the Handler
 type Config struct {
-	JwksUrl  string `json:"jwks_url"`
+	JwksURL  string `json:"jwks_url"`
 	Region   string `json:"region"`
 	Duration int64  `json:"duration"`
 	Rules    []Rule `json:"rules"`
 }
+
+// Rule represents a single claim to role mapping
 type Rule struct {
 	Role        string       `json:"role"`
 	Region      string       `json:"region"`
@@ -48,8 +57,10 @@ type Rule struct {
 	ClaimValues GitlabClaims `json:"claim_values"`
 }
 
+// Handler lambda function interface
 type Handler func(ctx context.Context, event Event) (HandlerResponse, error)
 
+// NewHandler creates the actual Handler function
 func NewHandler(auth Authorizer) Handler {
 	return func(ctx context.Context, event Event) (HandlerResponse, error) {
 
@@ -87,6 +98,6 @@ func NewHandler(auth Authorizer) Handler {
 			return RespondShellscript(credentials)
 		}
 
-		return RespondJson(credentials)
+		return RespondJSON(credentials)
 	}
 }

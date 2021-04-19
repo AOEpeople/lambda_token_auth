@@ -1,4 +1,4 @@
-package lambda_token_auth
+package auth
 
 import (
 	"encoding/json"
@@ -10,17 +10,22 @@ import (
 	"regexp"
 )
 
+// AwsConsumerInterface encapsultes all actions performs with the AWS services
 type AwsConsumerInterface interface {
+	// ReadConfiguration reads the configured S3 Bucket and returns Config
 	ReadConfiguration(config *Config, bucket string, key string) error
+	// AssumeRole performs this for the give rule
 	AssumeRole(rule *Rule, name string) (*sts.Credentials, error)
+	// ValidateRole checks wether a string matches the rule format
 	ValidateRole(role string) bool
 }
 
+// AwsConsumer is the implementation of AwsConsumerInterface
 type AwsConsumer struct {
 }
 
+// ReadConfiguration reads the configured S3 Bucket and returns Config
 func (a *AwsConsumer) ReadConfiguration(config *Config, bucket string, key string) error {
-	var err error
 	sess, err := session.NewSession(&aws.Config{})
 	if err != nil {
 		return fmt.Errorf("unable to create a new AWS session: %w", err)
@@ -28,10 +33,14 @@ func (a *AwsConsumer) ReadConfiguration(config *Config, bucket string, key strin
 	svc := s3.New(sess, &aws.Config{
 		DisableRestProtocolURICleaning: aws.Bool(true),
 	})
+
 	resp, err := svc.GetObject(&s3.GetObjectInput{
 		Bucket: aws.String(bucket),
 		Key:    aws.String(key),
 	})
+	if err != nil {
+		return err
+	}
 	decoder := json.NewDecoder(resp.Body)
 	if err := decoder.Decode(config); err != nil {
 		return fmt.Errorf("Unable to read RULES inputClaims.\n Error: %v", err)
@@ -40,6 +49,7 @@ func (a *AwsConsumer) ReadConfiguration(config *Config, bucket string, key strin
 	return nil
 }
 
+// AssumeRole performs this for the give rule
 func (a *AwsConsumer) AssumeRole(rule *Rule, name string) (*sts.Credentials, error) {
 	sess, err := session.NewSession(&aws.Config{
 		Region: &rule.Region,
@@ -63,6 +73,7 @@ func (a *AwsConsumer) AssumeRole(rule *Rule, name string) (*sts.Credentials, err
 	return result.Credentials, nil
 }
 
+// ValidateRole checks wether a string matches the rule format
 func (a *AwsConsumer) ValidateRole(role string) bool {
 	validRole := regexp.MustCompile(`^arn:aws:iam::\d{12}:role/[a-zA-Z0-9-_]+$`)
 	return validRole.MatchString(role)

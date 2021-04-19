@@ -1,4 +1,4 @@
-package lambda_token_auth_test
+package auth_test
 
 import (
 	"reflect"
@@ -11,16 +11,16 @@ func TestMatchRuleToClaims(t *testing.T) {
 		input *main.GitlabClaims
 		want  bool
 	}{
-		"simple_match": {input: &main.GitlabClaims{NamespaceId: "1"}, want: false},
-		"simple_mismatch": {input: &main.GitlabClaims{NamespaceId: "2"}, want: true},
-		"double_match": {input: &main.GitlabClaims{NamespaceId: "2", ProjectId: "5"}, want: true},
-		"double_mismatch": {input: &main.GitlabClaims{NamespaceId: "2", ProjectId: "4"}, want: false},
+		"simple_match": {input: &main.GitlabClaims{NamespaceID: "1"}, want: false},
+		"simple_mismatch": {input: &main.GitlabClaims{NamespaceID: "2"}, want: true},
+		"double_match": {input: &main.GitlabClaims{NamespaceID: "2", ProjectID: "5"}, want: true},
+		"double_mismatch": {input: &main.GitlabClaims{NamespaceID: "2", ProjectID: "4"}, want: false},
 	}
 	tokenClaims := &main.GitlabClaims{
-		NamespaceId: "2",
+		NamespaceID:   "2",
 		NamespacePath: "/path/to/repo",
-		ProjectId: "5",
-		ProjectPath: "/bla/blub",
+		ProjectID:     "5",
+		ProjectPath:   "/bla/blub",
 	}
 	tokenValidator := main.TokenValidator{}
 	for name, tc := range tests {
@@ -51,16 +51,16 @@ func TestValidateClaimsForRule(t *testing.T) {
 	var rules []main.Rule
 	rules = append(rules,main.Rule{
 		Role: "one",
-		ClaimValues: main.GitlabClaims{NamespaceId: "1"},
+		ClaimValues: main.GitlabClaims{NamespaceID: "1"},
 	})
 	rules = append(rules,main.Rule{
 		Role: "two",
-		ClaimValues: main.GitlabClaims{NamespaceId: "2"},
+		ClaimValues: main.GitlabClaims{NamespaceID: "2"},
 	})
 	tokenValidator := main.TokenValidator{}
 	for name, tc := range tests {
 		t.Run(name, func(t *testing.T) {
-			tokenClaims := &main.GitlabClaims{NamespaceId: tc.inputNamespaceId}
+			tokenClaims := &main.GitlabClaims{NamespaceID: tc.inputNamespaceId}
 			rule, err := tokenValidator.ValidateClaimsForRule(tokenClaims, tc.inputRole, rules)
 			if tc.wantErr && err == nil {
 				t.Errorf("expected empty rule within the result but got %s", rule.Role)

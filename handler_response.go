@@ -1,4 +1,4 @@
-package lambda_token_auth
+package auth
 
 import (
 	"encoding/json"
@@ -7,6 +7,7 @@ import (
 	"net/http"
 )
 
+// HandlerResponse the response format expected by Lambda
 // see https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-develop-integrations-lambda.html
 type HandlerResponse struct {
 	IsBase64Encoded bool `json:"isBase64Encoded,omitempty"`
@@ -15,13 +16,15 @@ type HandlerResponse struct {
 	Body string `json:"body,omitempty"`
 }
 
+// RespondError format a response with an error message
 func RespondError(err error, statusCode int) (HandlerResponse, error) {
 	return HandlerResponse{
 		StatusCode: statusCode,
-		Body: fmt.Sprintf("%s", err.Error()),
+		Body: err.Error(),
 	}, nil
 }
 
+// RespondShellscript format a response as a shellscript
 func RespondShellscript(credentials *sts.Credentials) (HandlerResponse, error) {
 	data := fmt.Sprintf("export AWS_ACCESS_KEY_ID=\"%s\"\n" +
 		"export AWS_SECRET_ACCESS_KEY=\"%s\"\n" +
@@ -38,7 +41,8 @@ func RespondShellscript(credentials *sts.Credentials) (HandlerResponse, error) {
 	}, nil
 }
 
-func RespondJson(credentials *sts.Credentials) (HandlerResponse, error) {
+// RespondJSON format a response as json
+func RespondJSON(credentials *sts.Credentials) (HandlerResponse, error) {
 	response, err := json.Marshal(&credentials)
 	if err != nil {
 		return RespondError(err, http.StatusInternalServerError)

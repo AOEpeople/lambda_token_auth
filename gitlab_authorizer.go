@@ -1,15 +1,17 @@
-package lambda_token_auth
+package auth
 
 import (
 	"fmt"
 )
 
+// GitlabAuthorizer allows to perform authorization with tokes coming from Gitlab instances
 type GitlabAuthorizer struct {
 	config *Config
 	awsConsumer *AwsConsumer
 	tokenValidator *TokenValidator
 }
 
+// NewGitlabAuthorizationHandler instantiates a GitlabAuthorizer
 func NewGitlabAuthorizationHandler(bucket, key string) (*GitlabAuthorizer, error) {
 	authHandler := GitlabAuthorizer{}
 	authHandler.awsConsumer = &AwsConsumer{}
@@ -23,16 +25,20 @@ func NewGitlabAuthorizationHandler(bucket, key string) (*GitlabAuthorizer, error
 		return nil, fmt.Errorf("empty rules configuration found")
 	}
 
-	authHandler.tokenValidator = NewTokenValidator(authHandler.config.JwksUrl)
+	authHandler.tokenValidator = NewTokenValidator(authHandler.config.JwksURL)
 	return &authHandler, nil
 }
 
+// TokenValidator ...
 func (h *GitlabAuthorizer) TokenValidator() TokenValidatorInterface {
 	return h.tokenValidator
 }
+
+// AwsConsumer ...
 func (h *GitlabAuthorizer) AwsConsumer() AwsConsumerInterface {
 	return h.awsConsumer
 }
+// Config ...
 func (h *GitlabAuthorizer) Config() *Config {
 	return h.config
 }

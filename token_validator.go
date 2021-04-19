@@ -1,4 +1,4 @@
-package lambda_token_auth
+package auth
 
 import (
 	"fmt"
@@ -9,14 +9,16 @@ import (
 	"strings"
 )
 
+// TokenValidatorInterface interface of validation objects
 type TokenValidatorInterface interface {
 	RetrieveClaimsFromToken(tokenInput string) (*GitlabClaims, error)
 	MatchClaims(tokenClaims *GitlabClaims, ruleClaims *GitlabClaims) bool
 	ValidateClaimsForRule(tokenClaims *GitlabClaims, requestedRole string, rules []Rule) (*Rule, error)
 }
 
-func NewTokenValidator(jwksUrl string) *TokenValidator {
-	jwks, err := keyfunc.Get(jwksUrl)
+// NewTokenValidator creates a new TokenValidator for a given system
+func NewTokenValidator(jwksURL string) *TokenValidator {
+	jwks, err := keyfunc.Get(jwksURL)
 	if err != nil {
 		log.Fatalf("Failed to get the JWKS from the given URL.\nError: %v", err)
 	}
@@ -27,10 +29,12 @@ func NewTokenValidator(jwksUrl string) *TokenValidator {
 	return validator
 }
 
+// TokenValidator implements a TokenValidatorInterface validating jwt tokens with a remote server
 type TokenValidator struct {
 	jwks *keyfunc.JWKS
 }
 
+// RetrieveClaimsFromToken validate the token and get all included claims
 func (t *TokenValidator) RetrieveClaimsFromToken(tokenInput string) (*GitlabClaims, error) {
 	token, err := jwt.ParseWithClaims(tokenInput, &GitlabClaims{}, t.jwks.KeyFunc)
 	if !token.Valid {
@@ -51,10 +55,11 @@ func (t *TokenValidator) RetrieveClaimsFromToken(tokenInput string) (*GitlabClai
 	if !ok {
 		return nil, fmt.Errorf("failed to retrieve claims from token: %w", err)
 	}
-	log.Printf("%v %v", claims.ProjectId, claims.StandardClaims.ExpiresAt)
+	log.Printf("%v %v", claims.ProjectID, claims.StandardClaims.ExpiresAt)
 	return claims, nil
 }
 
+// MatchClaims check if all claims from a token are presented within rules
 func (t *TokenValidator) MatchClaims(tokenClaims *GitlabClaims, ruleClaims *GitlabClaims) bool {
 	match := true
 	ruleClaimsRefection := reflect.ValueOf(ruleClaims).Elem()
@@ -70,6 +75,7 @@ func (t *TokenValidator) MatchClaims(tokenClaims *GitlabClaims, ruleClaims *Gitl
 	return match
 }
 
+// ValidateClaimsForRule check if
 func (t *TokenValidator) ValidateClaimsForRule(tokenClaims *GitlabClaims, requestedRole string, rules []Rule) (*Rule, error) {
 	for _, rule := range rules {
 		if strings.Compare(rule.Role, requestedRole) == 0 && t.MatchClaims(tokenClaims, &rule.ClaimValues) {

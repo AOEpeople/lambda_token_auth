@@ -1,4 +1,4 @@
-package lambda_token_auth_test
+package auth_test
 
 import (
 	"context"
@@ -36,11 +36,11 @@ func TestAuthorizationHandler(t *testing.T) {
 		var rules []auth.Rule
 		rules = append(rules,auth.Rule{
 			Role: "one",
-			ClaimValues: auth.GitlabClaims{NamespaceId: "1", UserLogin: "hans"},
+			ClaimValues: auth.GitlabClaims{NamespaceID: "1", UserLogin: "hans"},
 		})
 		rules = append(rules,auth.Rule{
 			Role: "two",
-			ClaimValues: auth.GitlabClaims{NamespaceId: "2", UserLogin: "hans"},
+			ClaimValues: auth.GitlabClaims{NamespaceID: "2", UserLogin: "hans"},
 		})
 
 		tokenValidator := mock.NewMockTokenValidatorInterface(ctrl)
