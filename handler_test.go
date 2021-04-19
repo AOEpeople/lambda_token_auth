@@ -1,4 +1,4 @@
-package token_authorizer_test
+package lambda_token_auth_test
 
 import (
 	"context"

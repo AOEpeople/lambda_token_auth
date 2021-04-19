@@ -1,4 +1,4 @@
-package token_authorizer
+package lambda_token_auth
 
 import (
 	"fmt"
