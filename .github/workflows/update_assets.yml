@@ -49,7 +49,7 @@ jobs:
           SOURCE_TAG: ${{ steps.branch_name.outputs.SOURCE_TAG }}
         run: |
           mkdir assets
-          zip assets/ci-test-${SOURCE_TAG}-linux-amd64.zip dist/token_auth-linux-amd64 README.md
+          zip assets/token_auth-${SOURCE_TAG}-linux-amd64.zip dist/token_auth-linux-amd64 README.md
           sha256sum assets/*zip > assets/SHASUMS256.txt
       - name: Upload release assets
         uses: skx/github-action-publish-binaries@master
