@@ -42,7 +42,7 @@ jobs:
         uses: actions/download-artifact@v1
         with:
           name: binaries
-          path: bin/
+          path: dist/
 
       - name: Create asset zips
         env:
