@@ -2,7 +2,12 @@ BINARY_LINUX64=dist/token_auth-linux-amd64
 SOURCE=$(shell find . -name "*go" -a -not -path "./vendor/*" -not -path "./cmd/testgen/*" )
 VERSION=$(shell git describe --tags)
 
-.PHONY: test-app test-lib build build-all tags short-test test run-broker clean  toxiproxy-setup toxiproxy-cmd
+.PHONY: assets test lint build clean
+
+lint:
+	golint ./...
+test:
+	go test -v ./...
 
 build:
 	cd cmd && GO111MODULE=on CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags \
