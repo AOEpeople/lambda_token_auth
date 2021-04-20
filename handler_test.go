@@ -38,14 +38,14 @@ func TestAuthorizationHandler(t *testing.T) {
 		rules = append(rules, auth.Rule{
 			Role: "one",
 			ClaimValues: auth.Claims{
-				ClaimsJson:     []byte("{\"namespace_id\": \"1\""),
+				ClaimsJSON:     []byte("{\"namespace_id\": \"1\""),
 				StandardClaims: jwt.StandardClaims{Subject: "hans"},
 			},
 		})
 		rules = append(rules, auth.Rule{
-			Role: "one",
+			Role: "two",
 			ClaimValues: auth.Claims{
-				ClaimsJson:     []byte("{\"namespace_id\": \"2\""),
+				ClaimsJSON:     []byte("{\"namespace_id\": \"2\""),
 				StandardClaims: jwt.StandardClaims{Subject: "hans"},
 			},
 		})

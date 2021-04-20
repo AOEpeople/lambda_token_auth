@@ -53,20 +53,20 @@ func (t *TokenValidator) RetrieveClaimsFromToken(tokenInput string) (*Claims, er
 		return nil, fmt.Errorf("error splitting token into parts")
 	}
 
-	claimsJson, err := jwt.DecodeSegment(parts[1])
+	claimsJSON, err := jwt.DecodeSegment(parts[1])
 
 	if err != nil {
 		return nil, fmt.Errorf("error decoding claims section: %s", err)
 	}
 
 	claims := &Claims{
-		ClaimsJson:     claimsJson,
+		ClaimsJSON:     claimsJSON,
 		StandardClaims: token.Claims.(jwt.StandardClaims),
 	}
 
 	return claims, nil
 }
-
+// MatchClaimsInternal implements claims matching on the json byte data level
 func MatchClaimsInternal(claims []byte, rules []byte) (bool, error) {
 	matches := true
 
@@ -97,7 +97,7 @@ func MatchClaimsInternal(claims []byte, rules []byte) (bool, error) {
 				return nil
 			}
 		case jsonparser.String, jsonparser.Boolean, jsonparser.Number:
-			if bytes.Compare(claimsObj, value) != 0 {
+			if !bytes.Equal(claimsObj, value) {
 				matches = false
 				return nil
 			}
@@ -115,7 +115,7 @@ func MatchClaimsInternal(claims []byte, rules []byte) (bool, error) {
 
 // MatchClaims check if all claims from a token are presented within rules
 func (t *TokenValidator) MatchClaims(tokenClaims *Claims, ruleClaims *Claims) bool {
-	match, err := MatchClaimsInternal(tokenClaims.ClaimsJson, ruleClaims.ClaimsJson)
+	match, err := MatchClaimsInternal(tokenClaims.ClaimsJSON, ruleClaims.ClaimsJSON)
 	if err != nil {
 		log.Fatalf("error matching claims: %s", err)
 	}

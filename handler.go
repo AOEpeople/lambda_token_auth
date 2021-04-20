@@ -28,7 +28,7 @@ type EventQuery struct {
 
 // Claims all claim fields a token from Gitlab could have
 type Claims struct {
-	ClaimsJson []byte
+	ClaimsJSON []byte
 	jwt.StandardClaims
 }
 
