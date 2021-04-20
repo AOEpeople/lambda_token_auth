@@ -4,16 +4,16 @@ import (
 	"fmt"
 )
 
-// GitlabAuthorizer allows to perform authorization with tokes coming from Gitlab instances
-type GitlabAuthorizer struct {
-	config *Config
-	awsConsumer *AwsConsumer
+// JWTAuthorizer allows to perform authorization with tokes coming from Gitlab instances
+type JWTAuthorizer struct {
+	config         *Config
+	awsConsumer    *AwsConsumer
 	tokenValidator *TokenValidator
 }
 
-// NewGitlabAuthorizationHandler instantiates a GitlabAuthorizer
-func NewGitlabAuthorizationHandler(bucket, key string) (*GitlabAuthorizer, error) {
-	authHandler := GitlabAuthorizer{}
+// NewJWTAuthorizationHandler instantiates a JWTAuthorizer
+func NewJWTAuthorizationHandler(bucket, key string) (*JWTAuthorizer, error) {
+	authHandler := JWTAuthorizer{}
 	authHandler.awsConsumer = &AwsConsumer{}
 	authHandler.config = &Config{}
 
@@ -30,15 +30,16 @@ func NewGitlabAuthorizationHandler(bucket, key string) (*GitlabAuthorizer, error
 }
 
 // TokenValidator ...
-func (h *GitlabAuthorizer) TokenValidator() TokenValidatorInterface {
+func (h *JWTAuthorizer) TokenValidator() TokenValidatorInterface {
 	return h.tokenValidator
 }
 
 // AwsConsumer ...
-func (h *GitlabAuthorizer) AwsConsumer() AwsConsumerInterface {
+func (h *JWTAuthorizer) AwsConsumer() AwsConsumerInterface {
 	return h.awsConsumer
 }
+
 // Config ...
-func (h *GitlabAuthorizer) Config() *Config {
+func (h *JWTAuthorizer) Config() *Config {
 	return h.config
 }

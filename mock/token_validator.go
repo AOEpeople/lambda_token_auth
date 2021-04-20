@@ -35,7 +35,7 @@ func (m *MockTokenValidatorInterface) EXPECT() *MockTokenValidatorInterfaceMockR
 }
 
 // MatchClaims mocks base method.
-func (m *MockTokenValidatorInterface) MatchClaims(tokenClaims, ruleClaims *token_authorizer.GitlabClaims) bool {
+func (m *MockTokenValidatorInterface) MatchClaims(tokenClaims, ruleClaims *token_authorizer.Claims) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "MatchClaims", tokenClaims, ruleClaims)
 	ret0, _ := ret[0].(bool)
@@ -49,10 +49,10 @@ func (mr *MockTokenValidatorInterfaceMockRecorder) MatchClaims(tokenClaims, rule
 }
 
 // RetrieveClaimsFromToken mocks base method.
-func (m *MockTokenValidatorInterface) RetrieveClaimsFromToken(tokenInput string) (*token_authorizer.GitlabClaims, error) {
+func (m *MockTokenValidatorInterface) RetrieveClaimsFromToken(tokenInput string) (*token_authorizer.Claims, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RetrieveClaimsFromToken", tokenInput)
-	ret0, _ := ret[0].(*token_authorizer.GitlabClaims)
+	ret0, _ := ret[0].(*token_authorizer.Claims)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -64,7 +64,7 @@ func (mr *MockTokenValidatorInterfaceMockRecorder) RetrieveClaimsFromToken(token
 }
 
 // ValidateClaimsForRule mocks base method.
-func (m *MockTokenValidatorInterface) ValidateClaimsForRule(tokenClaims *token_authorizer.GitlabClaims, requestedRole string, rules []token_authorizer.Rule) (*token_authorizer.Rule, error) {
+func (m *MockTokenValidatorInterface) ValidateClaimsForRule(tokenClaims *token_authorizer.Claims, requestedRole string, rules []token_authorizer.Rule) (*token_authorizer.Rule, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ValidateClaimsForRule", tokenClaims, requestedRole, rules)
 	ret0, _ := ret[0].(*token_authorizer.Rule)

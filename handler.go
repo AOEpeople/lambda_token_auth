@@ -3,9 +3,10 @@ package auth
 import (
 	"context"
 	"fmt"
-	"github.com/dgrijalva/jwt-go"
 	"log"
 	"net/http"
+
+	"github.com/dgrijalva/jwt-go"
 )
 
 // Event all data we expect within a request
@@ -25,19 +26,9 @@ type EventQuery struct {
 	Role string `json:"role"`
 }
 
-// GitlabClaims all claim fields a token from Gitlab could have
-type GitlabClaims struct {
-	NamespaceID          string `json:"namespace_id,omitempty"`
-	NamespacePath        string `json:"namespace_path,omitempty"`
-	ProjectID            string `json:"project_id,omitempty"`
-	ProjectPath          string `json:"project_path,omitempty"`
-	UserID               string `json:"user_id,omitempty"`
-	UserLogin            string `json:"user_login,omitempty"`
-	UserEmail            string `json:"user_email,omitempty"`
-	PipelineID           string `json:"pipeline_id,omitempty"`
-	JobID                string `json:"job_id,omitempty"`
-	Environment          string `json:"environment,omitempty"`
-	EnvironmentProtected string `json:"environment_protected,omitempty"`
+// Claims all claim fields a token from Gitlab could have
+type Claims struct {
+	ClaimsJson []byte
 	jwt.StandardClaims
 }
 
@@ -51,10 +42,10 @@ type Config struct {
 
 // Rule represents a single claim to role mapping
 type Rule struct {
-	Role        string       `json:"role"`
-	Region      string       `json:"region"`
-	Duration    int64        `json:"duration"`
-	ClaimValues GitlabClaims `json:"claim_values"`
+	Role        string `json:"role"`
+	Region      string `json:"region"`
+	Duration    int64  `json:"duration"`
+	ClaimValues Claims `json:"claim_values"`
 }
 
 // Handler lambda function interface
@@ -88,8 +79,8 @@ func NewHandler(auth Authorizer) Handler {
 			return RespondError(fmt.Errorf("unable to find matching role for the given token"), http.StatusUnauthorized)
 		}
 
-		log.Printf("Retrieved request from %s to assume role %s", claims.UserLogin, role.Role)
-		credentials, err := auth.AwsConsumer().AssumeRole(role, claims.UserLogin)
+		log.Printf("Retrieved request from %s to assume role %s", claims.Subject, role.Role)
+		credentials, err := auth.AwsConsumer().AssumeRole(role, claims.Subject)
 		if err != nil {
 			return RespondError(err, http.StatusInternalServerError)
 		}

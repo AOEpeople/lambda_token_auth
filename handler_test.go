@@ -3,6 +3,8 @@ package auth_test
 import (
 	"context"
 	"github.com/aws/aws-sdk-go/service/sts"
+	"github.com/dgrijalva/jwt-go"
+
 	"net/http"
 
 	auth "token_authorizer"
@@ -28,19 +30,24 @@ func TestAuthorizationHandler(t *testing.T) {
 		assert.Equal(t, http.StatusBadRequest, response.StatusCode)
 	})
 
-
 	t.Run("args valid", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
 		var rules []auth.Rule
-		rules = append(rules,auth.Rule{
+		rules = append(rules, auth.Rule{
 			Role: "one",
-			ClaimValues: auth.GitlabClaims{NamespaceID: "1", UserLogin: "hans"},
+			ClaimValues: auth.Claims{
+				ClaimsJson:     []byte("{\"namespace_id\": \"1\""),
+				StandardClaims: jwt.StandardClaims{Subject: "hans"},
+			},
 		})
-		rules = append(rules,auth.Rule{
-			Role: "two",
-			ClaimValues: auth.GitlabClaims{NamespaceID: "2", UserLogin: "hans"},
+		rules = append(rules, auth.Rule{
+			Role: "one",
+			ClaimValues: auth.Claims{
+				ClaimsJson:     []byte("{\"namespace_id\": \"2\""),
+				StandardClaims: jwt.StandardClaims{Subject: "hans"},
+			},
 		})
 
 		tokenValidator := mock.NewMockTokenValidatorInterface(ctrl)
@@ -61,8 +68,8 @@ func TestAuthorizationHandler(t *testing.T) {
 
 		handler := auth.NewHandler(authorizer)
 		event := auth.Event{
-			Headers: auth.EventHeaders{ Authorization: "token", Accept: "application/json"},
-			Query: auth.EventQuery{ Role: "one" },
+			Headers: auth.EventHeaders{Authorization: "token", Accept: "application/json"},
+			Query:   auth.EventQuery{Role: "one"},
 		}
 		response, err := handler(ctx, event)
 		assert.NoError(t, err)

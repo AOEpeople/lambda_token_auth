@@ -7,7 +7,8 @@ import (
 	auth "token_authorizer"
 )
 
-var gitlabAuthorizationHandler *auth.GitlabAuthorizer
+var jwtAuthorizer *auth.JWTAuthorizer
+
 func init() {
 
 	bucket := os.Getenv("CONFIG_BUCKET")
@@ -17,13 +18,13 @@ func init() {
 	}
 
 	var err error
-	gitlabAuthorizationHandler, err = auth.NewGitlabAuthorizationHandler(bucket, key)
+	jwtAuthorizer, err = auth.NewJWTAuthorizationHandler(bucket, key)
 	if err != nil {
 		log.Fatalf("Error initializing: %v", err)
 	}
 }
 
 func main() {
-	authHandler := auth.NewHandler(gitlabAuthorizationHandler)
+	authHandler := auth.NewHandler(jwtAuthorizer)
 	lambda.Start(authHandler)
 }

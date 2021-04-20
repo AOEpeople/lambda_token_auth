@@ -1,19 +1,21 @@
 package auth
 
 import (
+	"bytes"
 	"fmt"
-	"github.com/MicahParks/keyfunc"
-	"github.com/dgrijalva/jwt-go"
 	"log"
-	"reflect"
 	"strings"
+
+	"github.com/MicahParks/keyfunc"
+	"github.com/buger/jsonparser"
+	"github.com/dgrijalva/jwt-go"
 )
 
 // TokenValidatorInterface interface of validation objects
 type TokenValidatorInterface interface {
-	RetrieveClaimsFromToken(tokenInput string) (*GitlabClaims, error)
-	MatchClaims(tokenClaims *GitlabClaims, ruleClaims *GitlabClaims) bool
-	ValidateClaimsForRule(tokenClaims *GitlabClaims, requestedRole string, rules []Rule) (*Rule, error)
+	RetrieveClaimsFromToken(tokenInput string) (*Claims, error)
+	MatchClaims(tokenClaims *Claims, ruleClaims *Claims) bool
+	ValidateClaimsForRule(tokenClaims *Claims, requestedRole string, rules []Rule) (*Rule, error)
 }
 
 // NewTokenValidator creates a new TokenValidator for a given system
@@ -35,48 +37,94 @@ type TokenValidator struct {
 }
 
 // RetrieveClaimsFromToken validate the token and get all included claims
-func (t *TokenValidator) RetrieveClaimsFromToken(tokenInput string) (*GitlabClaims, error) {
-	token, err := jwt.ParseWithClaims(tokenInput, &GitlabClaims{}, t.jwks.KeyFunc)
-	if !token.Valid {
-		if ve, ok := err.(*jwt.ValidationError); ok {
-			if ve.Errors&jwt.ValidationErrorMalformed != 0 {
-				return nil, fmt.Errorf("that's not even a token")
-			} else if ve.Errors&(jwt.ValidationErrorExpired|jwt.ValidationErrorNotValidYet) != 0 {
-				return nil, fmt.Errorf("timing is everything - token is either expired or not active yet")
-			} else {
-				return nil, fmt.Errorf("couldn't handle this token: %w", err)
-			}
-		} else {
-			return nil, fmt.Errorf("couldn't handle this token: %w", err)
-		}
+func (t *TokenValidator) RetrieveClaimsFromToken(tokenInput string) (*Claims, error) {
+	token, err := jwt.ParseWithClaims(tokenInput, &Claims{}, t.jwks.KeyFunc)
+
+	if err != nil {
+		return nil, err
 	}
 
-	claims, ok := token.Claims.(*GitlabClaims)
-	if !ok {
-		return nil, fmt.Errorf("failed to retrieve claims from token: %w", err)
+	if !token.Valid {
+		return nil, fmt.Errorf("token invalid")
 	}
-	log.Printf("%v %v", claims.ProjectID, claims.StandardClaims.ExpiresAt)
+
+	parts := strings.Split(token.Raw, ".")
+	if len(parts) != 3 {
+		return nil, fmt.Errorf("error splitting token into parts")
+	}
+
+	claimsJson, err := jwt.DecodeSegment(parts[1])
+
+	if err != nil {
+		return nil, fmt.Errorf("error decoding claims section: %s", err)
+	}
+
+	claims := &Claims{
+		ClaimsJson:     claimsJson,
+		StandardClaims: token.Claims.(jwt.StandardClaims),
+	}
+
 	return claims, nil
 }
 
-// MatchClaims check if all claims from a token are presented within rules
-func (t *TokenValidator) MatchClaims(tokenClaims *GitlabClaims, ruleClaims *GitlabClaims) bool {
-	match := true
-	ruleClaimsRefection := reflect.ValueOf(ruleClaims).Elem()
-	tokenClaimsRefection := reflect.ValueOf(tokenClaims).Elem()
-	for i := 0; i < ruleClaimsRefection.NumField(); i++ {
-		ruleClaimsFieldValue := reflect.Value(ruleClaimsRefection.Field(i)).String()
-		tokenClaimsFieldValue := reflect.Value(tokenClaimsRefection.Field(i)).String()
-		if ruleClaimsFieldValue != "" && strings.Compare(ruleClaimsFieldValue,tokenClaimsFieldValue) != 0 {
-			match = false
-			break
+func MatchClaimsInternal(claims []byte, rules []byte) (bool, error) {
+	matches := true
+
+	err := jsonparser.ObjectEach(rules, func(key []byte, value []byte, dataType jsonparser.ValueType, offset int) error {
+		keyString := string(key)
+
+		claimsObj, claimsObjDataType, _, err := jsonparser.Get(claims, keyString)
+		//Check for parsing errors
+		if err != nil && claimsObjDataType != jsonparser.NotExist {
+			return err
 		}
+		//Check if rule type matches with claim type
+		if claimsObjDataType != dataType {
+			matches = false
+			return nil
+		}
+
+		switch dataType {
+		case jsonparser.Object:
+			//Check if object matches with rules
+			objMatches, err := MatchClaimsInternal(claimsObj, value)
+			if err != nil {
+				return err
+			}
+			//Check if object matches
+			if !objMatches {
+				matches = false
+				return nil
+			}
+		case jsonparser.String, jsonparser.Boolean, jsonparser.Number:
+			if bytes.Compare(claimsObj, value) != 0 {
+				matches = false
+				return nil
+			}
+		case jsonparser.Array:
+			return fmt.Errorf("handling for arraytypes not implemented yet")
+		case jsonparser.NotExist, jsonparser.Unknown, jsonparser.Null:
+			return fmt.Errorf("iterated over a key with type %s. This should not happen", dataType.String())
+		}
+
+		return nil
+	})
+
+	return matches, err
+}
+
+// MatchClaims check if all claims from a token are presented within rules
+func (t *TokenValidator) MatchClaims(tokenClaims *Claims, ruleClaims *Claims) bool {
+	match, err := MatchClaimsInternal(tokenClaims.ClaimsJson, ruleClaims.ClaimsJson)
+	if err != nil {
+		log.Fatalf("error matching claims: %s", err)
 	}
+
 	return match
 }
 
 // ValidateClaimsForRule check if
-func (t *TokenValidator) ValidateClaimsForRule(tokenClaims *GitlabClaims, requestedRole string, rules []Rule) (*Rule, error) {
+func (t *TokenValidator) ValidateClaimsForRule(tokenClaims *Claims, requestedRole string, rules []Rule) (*Rule, error) {
 	for _, rule := range rules {
 		if strings.Compare(rule.Role, requestedRole) == 0 && t.MatchClaims(tokenClaims, &rule.ClaimValues) {
 			return &rule, nil
