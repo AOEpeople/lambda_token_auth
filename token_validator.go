@@ -134,5 +134,5 @@ func (t *TokenValidator) ValidateClaimsForRule(tokenClaims *Claims, requestedRol
 			return &rule, nil
 		}
 	}
-	return nil, fmt.Errorf("unable to find matching rule")
+	return nil, nil
 }
