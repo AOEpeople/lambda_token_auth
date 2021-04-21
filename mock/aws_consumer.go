@@ -6,7 +6,7 @@ package mock
 
 import (
 	reflect "reflect"
-	token_authorizer "token_authorizer"
+	auth "token_authorizer"
 
 	sts "github.com/aws/aws-sdk-go/service/sts"
 	gomock "github.com/golang/mock/gomock"
@@ -36,7 +36,7 @@ func (m *MockAwsConsumerInterface) EXPECT() *MockAwsConsumerInterfaceMockRecorde
 }
 
 // AssumeRole mocks base method.
-func (m *MockAwsConsumerInterface) AssumeRole(rule *token_authorizer.Rule, name string) (*sts.Credentials, error) {
+func (m *MockAwsConsumerInterface) AssumeRole(rule *auth.Rule, name string) (*sts.Credentials, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AssumeRole", rule, name)
 	ret0, _ := ret[0].(*sts.Credentials)
@@ -51,7 +51,7 @@ func (mr *MockAwsConsumerInterfaceMockRecorder) AssumeRole(rule, name interface{
 }
 
 // ReadConfiguration mocks base method.
-func (m *MockAwsConsumerInterface) ReadConfiguration(config *token_authorizer.Config, bucket, key string) error {
+func (m *MockAwsConsumerInterface) ReadConfiguration(config *auth.Config, bucket, key string) error {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ReadConfiguration", config, bucket, key)
 	ret0, _ := ret[0].(error)

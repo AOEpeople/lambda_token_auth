@@ -2,17 +2,16 @@ package auth_test
 
 import (
 	"context"
+	"net/http"
+	"testing"
+
 	"github.com/aws/aws-sdk-go/service/sts"
 	"github.com/dgrijalva/jwt-go"
-
-	"net/http"
-
 	auth "token_authorizer"
 	"token_authorizer/mock"
 
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	"testing"
 )
 
 func TestAuthorizationHandler(t *testing.T) {
@@ -36,23 +35,26 @@ func TestAuthorizationHandler(t *testing.T) {
 
 		var rules []auth.Rule
 		rules = append(rules, auth.Rule{
-			Role: "one",
-			ClaimValues: auth.Claims{
-				ClaimsJSON:     []byte("{\"namespace_id\": \"1\""),
-				StandardClaims: jwt.StandardClaims{Subject: "hans"},
-			},
-		})
-		rules = append(rules, auth.Rule{
-			Role: "two",
-			ClaimValues: auth.Claims{
-				ClaimsJSON:     []byte("{\"namespace_id\": \"2\""),
-				StandardClaims: jwt.StandardClaims{Subject: "hans"},
-			},
+			Role:        "one",
+			ClaimValues: []byte("{\"namespace_id\": \"1\"}"),
 		})
 
+		rules = append(rules, auth.Rule{
+			Role:        "two",
+			ClaimValues: []byte("{\"namespace_id\": \"2\"}"),
+		})
+
+		claims := auth.Claims{ClaimsJSON: rules[0].ClaimValues,
+			StandardClaims: &jwt.StandardClaims{
+				Subject: "hans",
+			}}
+
 		tokenValidator := mock.NewMockTokenValidatorInterface(ctrl)
-		tokenValidator.EXPECT().RetrieveClaimsFromToken(gomock.Eq("token")).Return(&rules[0].ClaimValues, nil)
-		tokenValidator.EXPECT().ValidateClaimsForRule(gomock.Eq(&rules[0].ClaimValues), gomock.Eq("one"), gomock.Eq(rules)).Return(&rules[0], nil)
+
+		tokenValidator.EXPECT().RetrieveClaimsFromToken(gomock.Eq("token")).Return(&claims, nil)
+
+		tokenValidator.EXPECT().ValidateClaimsForRule(gomock.Eq(&claims), gomock.Eq("one"), gomock.Eq(rules)).Return(&rules[0], nil)
+
 		awsConsumer := mock.NewMockAwsConsumerInterface(ctrl)
 		awsConsumer.EXPECT().ValidateRole(gomock.Eq("one")).Return(true)
 		awsConsumer.EXPECT().AssumeRole(gomock.Eq(&rules[0]), gomock.Eq("hans")).Return(&sts.Credentials{}, nil)

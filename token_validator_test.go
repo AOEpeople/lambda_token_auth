@@ -26,6 +26,11 @@ func TestMatchClaimsInternal(t *testing.T) {
 			Rules:   "{\"foo\": \"foo\"}",
 			IsMatch: false,
 		},
+		"03_complex_match": {
+			Claims:  "{\n    \"namespace_id\": \"172\",\n    \"namespace_path\": \"niklas.fassbender\",\n    \"project_id\": \"1093\",\n    \"project_path\": \"niklas.fassbender/runner-trial\",\n    \"user_id\": \"134\",\n    \"user_login\": \"niklas.fassbender\",\n    \"user_email\": \"niklas.fassbender@aoe.com\",\n    \"pipeline_id\": \"1255137\",\n    \"job_id\": \"2769626\",\n    \"ref\": \"master\",\n    \"ref_type\": \"branch\",\n    \"ref_protected\": \"true\",\n    \"jti\": \"439b39a2-0d31-4ab6-aae7-e73805a12dce\",\n    \"iss\": \"gitlab.aoe.com\",\n    \"iat\": 1619003306,\n    \"nbf\": 1619003301,\n    \"exp\": 1619006906,\n    \"sub\": \"job_2769626\"\n}",
+			Rules:   "{\"namespace_id\": \"172\"}",
+			IsMatch: true,
+		},
 	}
 
 	for name, testCase := range tests {

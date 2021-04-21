@@ -6,7 +6,7 @@ package mock
 
 import (
 	reflect "reflect"
-	token_authorizer "token_authorizer"
+	auth "token_authorizer"
 
 	gomock "github.com/golang/mock/gomock"
 )
@@ -35,7 +35,7 @@ func (m *MockTokenValidatorInterface) EXPECT() *MockTokenValidatorInterfaceMockR
 }
 
 // MatchClaims mocks base method.
-func (m *MockTokenValidatorInterface) MatchClaims(tokenClaims, ruleClaims *token_authorizer.Claims) bool {
+func (m *MockTokenValidatorInterface) MatchClaims(tokenClaims *auth.Claims, ruleClaims []byte) bool {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "MatchClaims", tokenClaims, ruleClaims)
 	ret0, _ := ret[0].(bool)
@@ -49,10 +49,10 @@ func (mr *MockTokenValidatorInterfaceMockRecorder) MatchClaims(tokenClaims, rule
 }
 
 // RetrieveClaimsFromToken mocks base method.
-func (m *MockTokenValidatorInterface) RetrieveClaimsFromToken(tokenInput string) (*token_authorizer.Claims, error) {
+func (m *MockTokenValidatorInterface) RetrieveClaimsFromToken(tokenInput string) (*auth.Claims, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "RetrieveClaimsFromToken", tokenInput)
-	ret0, _ := ret[0].(*token_authorizer.Claims)
+	ret0, _ := ret[0].(*auth.Claims)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
@@ -64,10 +64,10 @@ func (mr *MockTokenValidatorInterfaceMockRecorder) RetrieveClaimsFromToken(token
 }
 
 // ValidateClaimsForRule mocks base method.
-func (m *MockTokenValidatorInterface) ValidateClaimsForRule(tokenClaims *token_authorizer.Claims, requestedRole string, rules []token_authorizer.Rule) (*token_authorizer.Rule, error) {
+func (m *MockTokenValidatorInterface) ValidateClaimsForRule(tokenClaims *auth.Claims, requestedRole string, rules []auth.Rule) (*auth.Rule, error) {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "ValidateClaimsForRule", tokenClaims, requestedRole, rules)
-	ret0, _ := ret[0].(*token_authorizer.Rule)
+	ret0, _ := ret[0].(*auth.Rule)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }

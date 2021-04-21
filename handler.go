@@ -2,6 +2,7 @@ package auth
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
@@ -28,8 +29,8 @@ type EventQuery struct {
 
 // Claims all claim fields a token from Gitlab could have
 type Claims struct {
-	ClaimsJSON []byte
-	jwt.StandardClaims
+	ClaimsJSON     []byte
+	StandardClaims *jwt.StandardClaims
 }
 
 // Config holds all configuration for the Handler
@@ -42,10 +43,10 @@ type Config struct {
 
 // Rule represents a single claim to role mapping
 type Rule struct {
-	Role        string `json:"role"`
-	Region      string `json:"region"`
-	Duration    int64  `json:"duration"`
-	ClaimValues Claims `json:"claim_values"`
+	Role        string          `json:"role"`
+	Region      string          `json:"region"`
+	Duration    int64           `json:"duration"`
+	ClaimValues json.RawMessage `json:"claim_values"`
 }
 
 // Handler lambda function interface
@@ -69,7 +70,7 @@ func NewHandler(auth Authorizer) Handler {
 		if err != nil {
 			return RespondError(err, http.StatusUnauthorized)
 		}
-
+		log.Printf("Claims JSON: %s", claims.ClaimsJSON)
 		log.Printf("Validated Token")
 
 		role, err := auth.TokenValidator().ValidateClaimsForRule(claims, event.Query.Role, auth.Config().Rules)
@@ -79,8 +80,8 @@ func NewHandler(auth Authorizer) Handler {
 			return RespondError(fmt.Errorf("unable to find matching role for the given token"), http.StatusUnauthorized)
 		}
 
-		log.Printf("Retrieved request from %s to assume role %s", claims.Subject, role.Role)
-		credentials, err := auth.AwsConsumer().AssumeRole(role, claims.Subject)
+		log.Printf("Retrieved request from %s to assume role %s", claims.StandardClaims.Subject, role.Role)
+		credentials, err := auth.AwsConsumer().AssumeRole(role, claims.StandardClaims.Subject)
 		if err != nil {
 			return RespondError(err, http.StatusInternalServerError)
 		}

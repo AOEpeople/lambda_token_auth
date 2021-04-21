@@ -6,7 +6,7 @@ package mock
 
 import (
 	reflect "reflect"
-	token_authorizer "token_authorizer"
+	auth "token_authorizer"
 
 	gomock "github.com/golang/mock/gomock"
 )
@@ -35,10 +35,10 @@ func (m *MockAuthorizer) EXPECT() *MockAuthorizerMockRecorder {
 }
 
 // AwsConsumer mocks base method.
-func (m *MockAuthorizer) AwsConsumer() token_authorizer.AwsConsumerInterface {
+func (m *MockAuthorizer) AwsConsumer() auth.AwsConsumerInterface {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "AwsConsumer")
-	ret0, _ := ret[0].(token_authorizer.AwsConsumerInterface)
+	ret0, _ := ret[0].(auth.AwsConsumerInterface)
 	return ret0
 }
 
@@ -49,10 +49,10 @@ func (mr *MockAuthorizerMockRecorder) AwsConsumer() *gomock.Call {
 }
 
 // Config mocks base method.
-func (m *MockAuthorizer) Config() *token_authorizer.Config {
+func (m *MockAuthorizer) Config() *auth.Config {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "Config")
-	ret0, _ := ret[0].(*token_authorizer.Config)
+	ret0, _ := ret[0].(*auth.Config)
 	return ret0
 }
 
@@ -63,10 +63,10 @@ func (mr *MockAuthorizerMockRecorder) Config() *gomock.Call {
 }
 
 // TokenValidator mocks base method.
-func (m *MockAuthorizer) TokenValidator() token_authorizer.TokenValidatorInterface {
+func (m *MockAuthorizer) TokenValidator() auth.TokenValidatorInterface {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "TokenValidator")
-	ret0, _ := ret[0].(token_authorizer.TokenValidatorInterface)
+	ret0, _ := ret[0].(auth.TokenValidatorInterface)
 	return ret0
 }
 

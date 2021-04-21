@@ -14,7 +14,7 @@ import (
 // TokenValidatorInterface interface of validation objects
 type TokenValidatorInterface interface {
 	RetrieveClaimsFromToken(tokenInput string) (*Claims, error)
-	MatchClaims(tokenClaims *Claims, ruleClaims *Claims) bool
+	MatchClaims(tokenClaims *Claims, ruleClaims []byte) bool
 	ValidateClaimsForRule(tokenClaims *Claims, requestedRole string, rules []Rule) (*Rule, error)
 }
 
@@ -38,7 +38,7 @@ type TokenValidator struct {
 
 // RetrieveClaimsFromToken validate the token and get all included claims
 func (t *TokenValidator) RetrieveClaimsFromToken(tokenInput string) (*Claims, error) {
-	token, err := jwt.ParseWithClaims(tokenInput, &Claims{}, t.jwks.KeyFunc)
+	token, err := jwt.ParseWithClaims(tokenInput, &jwt.StandardClaims{}, t.jwks.KeyFunc)
 
 	if err != nil {
 		return nil, err
@@ -47,6 +47,8 @@ func (t *TokenValidator) RetrieveClaimsFromToken(tokenInput string) (*Claims, er
 	if !token.Valid {
 		return nil, fmt.Errorf("token invalid")
 	}
+
+	log.Printf("Raw token: %s", token.Raw)
 
 	parts := strings.Split(token.Raw, ".")
 	if len(parts) != 3 {
@@ -61,11 +63,12 @@ func (t *TokenValidator) RetrieveClaimsFromToken(tokenInput string) (*Claims, er
 
 	claims := &Claims{
 		ClaimsJSON:     claimsJSON,
-		StandardClaims: token.Claims.(jwt.StandardClaims),
+		StandardClaims: token.Claims.(*jwt.StandardClaims),
 	}
 
 	return claims, nil
 }
+
 // MatchClaimsInternal implements claims matching on the json byte data level
 func MatchClaimsInternal(claims []byte, rules []byte) (bool, error) {
 	matches := true
@@ -114,8 +117,9 @@ func MatchClaimsInternal(claims []byte, rules []byte) (bool, error) {
 }
 
 // MatchClaims check if all claims from a token are presented within rules
-func (t *TokenValidator) MatchClaims(tokenClaims *Claims, ruleClaims *Claims) bool {
-	match, err := MatchClaimsInternal(tokenClaims.ClaimsJSON, ruleClaims.ClaimsJSON)
+func (t *TokenValidator) MatchClaims(tokenClaims *Claims, ruleClaims []byte) bool {
+	log.Printf("Rules JSON: %s", ruleClaims)
+	match, err := MatchClaimsInternal(tokenClaims.ClaimsJSON, ruleClaims)
 	if err != nil {
 		log.Fatalf("error matching claims: %s", err)
 	}
@@ -126,7 +130,7 @@ func (t *TokenValidator) MatchClaims(tokenClaims *Claims, ruleClaims *Claims) bo
 // ValidateClaimsForRule check if
 func (t *TokenValidator) ValidateClaimsForRule(tokenClaims *Claims, requestedRole string, rules []Rule) (*Rule, error) {
 	for _, rule := range rules {
-		if strings.Compare(rule.Role, requestedRole) == 0 && t.MatchClaims(tokenClaims, &rule.ClaimValues) {
+		if strings.Compare(rule.Role, requestedRole) == 0 && t.MatchClaims(tokenClaims, rule.ClaimValues) {
 			return &rule, nil
 		}
 	}
