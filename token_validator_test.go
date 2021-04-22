@@ -28,9 +28,24 @@ func TestMatchClaimsInternal(t *testing.T) {
 			IsMatch: false,
 		},
 		"03_complex_match": {
-			Claims:  "{\n    \"namespace_id\": \"172\",\n    \"namespace_path\": \"niklas.fassbender\",\n    \"project_id\": \"1093\",\n    \"project_path\": \"niklas.fassbender/runner-trial\",\n    \"user_id\": \"134\",\n    \"user_login\": \"niklas.fassbender\",\n    \"user_email\": \"niklas.fassbender@aoe.com\",\n    \"pipeline_id\": \"1255137\",\n    \"job_id\": \"2769626\",\n    \"ref\": \"master\",\n    \"ref_type\": \"branch\",\n    \"ref_protected\": \"true\",\n    \"jti\": \"439b39a2-0d31-4ab6-aae7-e73805a12dce\",\n    \"iss\": \"gitlab.aoe.com\",\n    \"iat\": 1619003306,\n    \"nbf\": 1619003301,\n    \"exp\": 1619006906,\n    \"sub\": \"job_2769626\"\n}",
+			Claims:  "{\"namespace_id\": \"172\",\"namespace_path\": \"niklas.fassbender\",\"project_id\": \"1093\",\"project_path\": \"niklas.fassbender/runner-trial\",\"user_id\": \"134\",\"user_login\": \"niklas.fassbender\",\"user_email\": \"niklas.fassbender@aoe.com\",\"pipeline_id\": \"1255137\",\"job_id\": \"2769626\",\"ref\": \"master\",\"ref_type\": \"branch\",\"ref_protected\": \"true\",\"jti\": \"439b39a2-0d31-4ab6-aae7-e73805a12dce\",\"iss\": \"gitlab.aoe.com\",\"iat\": 1619003306,\"nbf\": 1619003301,\"exp\": 1619006906,\"sub\": \"job_2769626\"\n}",
 			Rules:   "{\"namespace_id\": \"172\"}",
 			IsMatch: true,
+		},
+		"03_nested_match": {
+			Claims:  "{\"foo\": {\"bar\": \"botz\"}, \"bum\": \"bang\"}",
+			Rules:   "{\"foo\": {\"bar\": \"botz\"}}",
+			IsMatch: true,
+		},
+		"04_nested_mistmatch": {
+			Claims:  "{\"foo\": {\"bar\": \"botz\"}, \"bum\": \"bang\"}",
+			Rules:   "{\"foo\": true}",
+			IsMatch: false,
+		},
+		"05_deeply_nested_mistmatch": {
+			Claims:  "{\"foo\": {\"bar\": {\"bar\": \"botz\"}}, \"bum\": \"bang\"}",
+			Rules:   "{\"foo\": {\"bar\": \"botz\"}}",
+			IsMatch: false,
 		},
 	}
 	ctx := context.TODO()
