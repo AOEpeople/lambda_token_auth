@@ -113,8 +113,7 @@ func MatchClaimsInternal(ctx context.Context, claims []byte, rules []byte) (bool
 
 		return nil
 	})
-
-	return matches, err
+	return matches && err == nil, err
 }
 
 // MatchClaims check if all claims from a token are presented within rules

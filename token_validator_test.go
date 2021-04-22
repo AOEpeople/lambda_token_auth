@@ -14,7 +14,6 @@ type TestCase struct {
 	IsMatch bool
 }
 
-//TODO testing for errors
 func TestMatchClaimsInternal(t *testing.T) {
 	tests := map[string]TestCase{
 		"01_simple_match": {
@@ -53,6 +52,39 @@ func TestMatchClaimsInternal(t *testing.T) {
 		t.Run(name, func(t *testing.T) {
 			matches, err := auth.MatchClaimsInternal(ctx, []byte(testCase.Claims), []byte(testCase.Rules))
 			assert.Equal(t, err, nil)
+			assert.Equal(t, testCase.IsMatch, matches)
+		})
+	}
+}
+
+func TestMatchClaimsInternalErrorHandling(t *testing.T) {
+	tests := map[string]TestCase{
+		"01_empty": {
+			Claims:  "",
+			Rules:   "",
+			IsMatch: false,
+		},
+		"02_array_handling": {
+			Claims:  "{\"roles\": [\"key\": \"value\"]}",
+			Rules:   "{\"roles\": [\"key\": \"value\"]}",
+			IsMatch: false,
+		},
+		"03_nested_error_handling": {
+			Claims:  "{\"roles\": {\"sub\": [\"key\": \"value\"]}",
+			Rules:   "{\"roles\": {\"sub\": [\"key\": \"value\"]}",
+			IsMatch: false,
+		},
+		"04_null": {
+			Claims:  "{\"namespace_id\": \"172\", \"roles\": null}",
+			Rules:   "{\"namespace_id\": \"172\", \"roles\": null}",
+			IsMatch: false,
+		},
+	}
+	ctx := context.TODO()
+	for name, testCase := range tests {
+		t.Run(name, func(t *testing.T) {
+			matches, err := auth.MatchClaimsInternal(ctx, []byte(testCase.Claims), []byte(testCase.Rules))
+			assert.NotEqual(t, err, nil)
 			assert.Equal(t, testCase.IsMatch, matches)
 		})
 	}
