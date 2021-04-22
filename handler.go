@@ -59,7 +59,7 @@ type Handler func(ctx context.Context, event Event) (HandlerResponse, error)
 // NewHandler creates the actual Handler function
 func NewHandler(auth Authorizer) Handler {
 	return func(ctx context.Context, event Event) (HandlerResponse, error) {
-		context.WithValue(ctx,requestIdKey, event.Headers.AmznRequestId)
+		ctx = context.WithValue(ctx,requestIdKey, event.Headers.AmznRequestId)
 		logger := Logger(ctx)
 
 		if event.Headers.Authorization == "" || event.Query.Role == "" {
