@@ -19,7 +19,7 @@ type Event struct {
 type EventHeaders struct {
 	Authorization string `json:"authorization"`
 	Accept        string `json:"accept,omitempty"`
-	AmznRequestId string `json:"x-amzn-RequestId,omitempty"`
+	AmznRequestID string `json:"x-amzn-RequestId,omitempty"`
 }
 
 // EventQuery all query fields we expect in a request
@@ -49,9 +49,9 @@ type Rule struct {
 	ClaimValues json.RawMessage `json:"claim_values"`
 }
 
-type correlationIdType int
+type correlationIDType int
 const (
-	requestIdKey correlationIdType = iota
+	requestIDKey correlationIDType = iota
 )
 // Handler lambda function interface
 type Handler func(ctx context.Context, event Event) (HandlerResponse, error)
@@ -59,7 +59,7 @@ type Handler func(ctx context.Context, event Event) (HandlerResponse, error)
 // NewHandler creates the actual Handler function
 func NewHandler(auth Authorizer) Handler {
 	return func(ctx context.Context, event Event) (HandlerResponse, error) {
-		ctx = context.WithValue(ctx,requestIdKey, event.Headers.AmznRequestId)
+		ctx = context.WithValue(ctx, requestIDKey, event.Headers.AmznRequestID)
 		logger := Logger(ctx)
 
 		if event.Headers.Authorization == "" || event.Query.Role == "" {
