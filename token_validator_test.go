@@ -1,6 +1,7 @@
 package auth_test
 
 import (
+	"context"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -32,10 +33,10 @@ func TestMatchClaimsInternal(t *testing.T) {
 			IsMatch: true,
 		},
 	}
-
+	ctx := context.TODO()
 	for name, testCase := range tests {
 		t.Run(name, func(t *testing.T) {
-			matches, err := auth.MatchClaimsInternal([]byte(testCase.Claims), []byte(testCase.Rules))
+			matches, err := auth.MatchClaimsInternal(ctx, []byte(testCase.Claims), []byte(testCase.Rules))
 			assert.Equal(t, err, nil)
 			assert.Equal(t, testCase.IsMatch, matches)
 		})

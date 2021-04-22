@@ -2,6 +2,7 @@ package auth
 
 import (
 	"bytes"
+	"context"
 	"fmt"
 	"log"
 	"strings"
@@ -13,9 +14,9 @@ import (
 
 // TokenValidatorInterface interface of validation objects
 type TokenValidatorInterface interface {
-	RetrieveClaimsFromToken(tokenInput string) (*Claims, error)
-	MatchClaims(tokenClaims *Claims, ruleClaims []byte) bool
-	ValidateClaimsForRule(tokenClaims *Claims, requestedRole string, rules []Rule) (*Rule, error)
+	RetrieveClaimsFromToken(ctx context.Context, tokenInput string) (*Claims, error)
+	MatchClaims(ctx context.Context, tokenClaims *Claims, ruleClaims []byte) bool
+	ValidateClaimsForRule(ctx context.Context, tokenClaims *Claims, requestedRole string, rules []Rule) (*Rule, error)
 }
 
 // NewTokenValidator creates a new TokenValidator for a given system
@@ -37,7 +38,7 @@ type TokenValidator struct {
 }
 
 // RetrieveClaimsFromToken validate the token and get all included claims
-func (t *TokenValidator) RetrieveClaimsFromToken(tokenInput string) (*Claims, error) {
+func (t *TokenValidator) RetrieveClaimsFromToken(ctx context.Context, tokenInput string) (*Claims, error) {
 	token, err := jwt.ParseWithClaims(tokenInput, &jwt.StandardClaims{}, t.jwks.KeyFunc)
 
 	if err != nil {
@@ -48,7 +49,7 @@ func (t *TokenValidator) RetrieveClaimsFromToken(tokenInput string) (*Claims, er
 		return nil, fmt.Errorf("token invalid")
 	}
 
-	log.Printf("Raw token: %s", token.Raw)
+	Logger(ctx).Debugf("Raw token: %s", token.Raw)
 
 	parts := strings.Split(token.Raw, ".")
 	if len(parts) != 3 {
@@ -70,7 +71,7 @@ func (t *TokenValidator) RetrieveClaimsFromToken(tokenInput string) (*Claims, er
 }
 
 // MatchClaimsInternal implements claims matching on the json byte data level
-func MatchClaimsInternal(claims []byte, rules []byte) (bool, error) {
+func MatchClaimsInternal(ctx context.Context, claims []byte, rules []byte) (bool, error) {
 	matches := true
 
 	err := jsonparser.ObjectEach(rules, func(key []byte, value []byte, dataType jsonparser.ValueType, offset int) error {
@@ -90,7 +91,7 @@ func MatchClaimsInternal(claims []byte, rules []byte) (bool, error) {
 		switch dataType {
 		case jsonparser.Object:
 			//Check if object matches with rules
-			objMatches, err := MatchClaimsInternal(claimsObj, value)
+			objMatches, err := MatchClaimsInternal(ctx, claimsObj, value)
 			if err != nil {
 				return err
 			}
@@ -117,20 +118,21 @@ func MatchClaimsInternal(claims []byte, rules []byte) (bool, error) {
 }
 
 // MatchClaims check if all claims from a token are presented within rules
-func (t *TokenValidator) MatchClaims(tokenClaims *Claims, ruleClaims []byte) bool {
-	log.Printf("Rules JSON: %s", ruleClaims)
-	match, err := MatchClaimsInternal(tokenClaims.ClaimsJSON, ruleClaims)
+func (t *TokenValidator) MatchClaims(ctx context.Context, tokenClaims *Claims, ruleClaims []byte) bool {
+	Logger(ctx).Debugf("Rules JSON: %s", ruleClaims)
+	match, err := MatchClaimsInternal(ctx, tokenClaims.ClaimsJSON, ruleClaims)
+	//TODO improve error handling
 	if err != nil {
-		log.Fatalf("error matching claims: %s", err)
+		Logger(ctx).Fatalf("error matching claims: %s", err)
 	}
 
 	return match
 }
 
 // ValidateClaimsForRule check if
-func (t *TokenValidator) ValidateClaimsForRule(tokenClaims *Claims, requestedRole string, rules []Rule) (*Rule, error) {
+func (t *TokenValidator) ValidateClaimsForRule(ctx context.Context, tokenClaims *Claims, requestedRole string, rules []Rule) (*Rule, error) {
 	for _, rule := range rules {
-		if strings.Compare(rule.Role, requestedRole) == 0 && t.MatchClaims(tokenClaims, rule.ClaimValues) {
+		if strings.Compare(rule.Role, requestedRole) == 0 && t.MatchClaims(ctx, tokenClaims, rule.ClaimValues) {
 			return &rule, nil
 		}
 	}

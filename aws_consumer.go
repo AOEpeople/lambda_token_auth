@@ -10,7 +10,7 @@ import (
 	"regexp"
 )
 
-// AwsConsumerInterface encapsultes all actions performs with the AWS services
+// AwsConsumerInterface encapsulates all actions performs with the AWS services
 type AwsConsumerInterface interface {
 	// ReadConfiguration reads the configured S3 Bucket and returns Config
 	ReadConfiguration(config *Config, bucket string, key string) error
@@ -73,7 +73,7 @@ func (a *AwsConsumer) AssumeRole(rule *Rule, name string) (*sts.Credentials, err
 	return result.Credentials, nil
 }
 
-// ValidateRole checks wether a string matches the rule format
+// ValidateRole checks whether a string matches the rule format
 func (a *AwsConsumer) ValidateRole(role string) bool {
 	validRole := regexp.MustCompile(`^arn:aws:iam::\d{12}:role/[a-zA-Z0-9-_]+$`)
 	return validRole.MatchString(role)

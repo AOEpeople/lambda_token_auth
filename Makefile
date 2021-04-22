@@ -8,8 +8,12 @@ lint:
 	golint ./...
 test:
 	go test -v ./...
+coverage:
+	go test -coverprofile=coverage.out ./...
+	go tool cover -html=coverage.out
 
 build:
+	cd mock && go generate && cd ..
 	cd cmd && GO111MODULE=on CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags \
 				"-s -w" -o ../$(BINARY_LINUX64)
 

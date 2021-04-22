@@ -5,6 +5,7 @@
 package mock
 
 import (
+	context "context"
 	reflect "reflect"
 	auth "token_authorizer"
 
@@ -35,45 +36,45 @@ func (m *MockTokenValidatorInterface) EXPECT() *MockTokenValidatorInterfaceMockR
 }
 
 // MatchClaims mocks base method.
-func (m *MockTokenValidatorInterface) MatchClaims(tokenClaims *auth.Claims, ruleClaims []byte) bool {
+func (m *MockTokenValidatorInterface) MatchClaims(ctx context.Context, tokenClaims *auth.Claims, ruleClaims []byte) bool {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "MatchClaims", tokenClaims, ruleClaims)
+	ret := m.ctrl.Call(m, "MatchClaims", ctx, tokenClaims, ruleClaims)
 	ret0, _ := ret[0].(bool)
 	return ret0
 }
 
 // MatchClaims indicates an expected call of MatchClaims.
-func (mr *MockTokenValidatorInterfaceMockRecorder) MatchClaims(tokenClaims, ruleClaims interface{}) *gomock.Call {
+func (mr *MockTokenValidatorInterfaceMockRecorder) MatchClaims(ctx, tokenClaims, ruleClaims interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MatchClaims", reflect.TypeOf((*MockTokenValidatorInterface)(nil).MatchClaims), tokenClaims, ruleClaims)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "MatchClaims", reflect.TypeOf((*MockTokenValidatorInterface)(nil).MatchClaims), ctx, tokenClaims, ruleClaims)
 }
 
 // RetrieveClaimsFromToken mocks base method.
-func (m *MockTokenValidatorInterface) RetrieveClaimsFromToken(tokenInput string) (*auth.Claims, error) {
+func (m *MockTokenValidatorInterface) RetrieveClaimsFromToken(ctx context.Context, tokenInput string) (*auth.Claims, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RetrieveClaimsFromToken", tokenInput)
+	ret := m.ctrl.Call(m, "RetrieveClaimsFromToken", ctx, tokenInput)
 	ret0, _ := ret[0].(*auth.Claims)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // RetrieveClaimsFromToken indicates an expected call of RetrieveClaimsFromToken.
-func (mr *MockTokenValidatorInterfaceMockRecorder) RetrieveClaimsFromToken(tokenInput interface{}) *gomock.Call {
+func (mr *MockTokenValidatorInterfaceMockRecorder) RetrieveClaimsFromToken(ctx, tokenInput interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RetrieveClaimsFromToken", reflect.TypeOf((*MockTokenValidatorInterface)(nil).RetrieveClaimsFromToken), tokenInput)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RetrieveClaimsFromToken", reflect.TypeOf((*MockTokenValidatorInterface)(nil).RetrieveClaimsFromToken), ctx, tokenInput)
 }
 
 // ValidateClaimsForRule mocks base method.
-func (m *MockTokenValidatorInterface) ValidateClaimsForRule(tokenClaims *auth.Claims, requestedRole string, rules []auth.Rule) (*auth.Rule, error) {
+func (m *MockTokenValidatorInterface) ValidateClaimsForRule(ctx context.Context, tokenClaims *auth.Claims, requestedRole string, rules []auth.Rule) (*auth.Rule, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "ValidateClaimsForRule", tokenClaims, requestedRole, rules)
+	ret := m.ctrl.Call(m, "ValidateClaimsForRule", ctx, tokenClaims, requestedRole, rules)
 	ret0, _ := ret[0].(*auth.Rule)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // ValidateClaimsForRule indicates an expected call of ValidateClaimsForRule.
-func (mr *MockTokenValidatorInterfaceMockRecorder) ValidateClaimsForRule(tokenClaims, requestedRole, rules interface{}) *gomock.Call {
+func (mr *MockTokenValidatorInterfaceMockRecorder) ValidateClaimsForRule(ctx, tokenClaims, requestedRole, rules interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateClaimsForRule", reflect.TypeOf((*MockTokenValidatorInterface)(nil).ValidateClaimsForRule), tokenClaims, requestedRole, rules)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ValidateClaimsForRule", reflect.TypeOf((*MockTokenValidatorInterface)(nil).ValidateClaimsForRule), ctx, tokenClaims, requestedRole, rules)
 }

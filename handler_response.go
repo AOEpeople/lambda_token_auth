@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"github.com/aws/aws-sdk-go/service/sts"
@@ -17,7 +18,8 @@ type HandlerResponse struct {
 }
 
 // RespondError format a response with an error message
-func RespondError(err error, statusCode int) (HandlerResponse, error) {
+func RespondError(ctx context.Context, err error, statusCode int) (HandlerResponse, error) {
+	Logger(ctx).Errorf("error response of request %d, %s", statusCode, err.Error())
 	return HandlerResponse{
 		StatusCode: statusCode,
 		Body: err.Error(),
@@ -25,13 +27,14 @@ func RespondError(err error, statusCode int) (HandlerResponse, error) {
 }
 
 // RespondShellscript format a response as a shellscript
-func RespondShellscript(credentials *sts.Credentials) (HandlerResponse, error) {
+func RespondShellscript(ctx context.Context, credentials *sts.Credentials) (HandlerResponse, error) {
 	data := fmt.Sprintf("export AWS_ACCESS_KEY_ID=\"%s\"\n" +
 		"export AWS_SECRET_ACCESS_KEY=\"%s\"\n" +
 		"export AWS_SESSION_TOKEN=\"%s\"\n",
 			*credentials.AccessKeyId,
 			*credentials.SecretAccessKey,
 			*credentials.SessionToken)
+	Logger(ctx).Debug("response successful - responding credentials as script")
 	return HandlerResponse{
 		StatusCode: http.StatusOK,
 		Headers: map[string]string{
@@ -42,12 +45,12 @@ func RespondShellscript(credentials *sts.Credentials) (HandlerResponse, error) {
 }
 
 // RespondJSON format a response as json
-func RespondJSON(credentials *sts.Credentials) (HandlerResponse, error) {
+func RespondJSON(ctx context.Context, credentials *sts.Credentials) (HandlerResponse, error) {
 	response, err := json.Marshal(&credentials)
 	if err != nil {
-		return RespondError(err, http.StatusInternalServerError)
+		return RespondError(ctx, err, http.StatusInternalServerError)
 	}
-
+	Logger(ctx).Debug("response successful - responding credentials as json")
 	return HandlerResponse{
 		StatusCode: http.StatusOK,
 		Headers: map[string]string{

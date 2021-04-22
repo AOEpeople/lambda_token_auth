@@ -2,7 +2,7 @@ package main
 
 import (
 	"github.com/aws/aws-lambda-go/lambda"
-	"log"
+	log "github.com/sirupsen/logrus"
 	"os"
 	auth "token_authorizer"
 )
@@ -10,6 +10,13 @@ import (
 var jwtAuthorizer *auth.JWTAuthorizer
 
 func init() {
+	loglevel := os.Getenv("LOGLEVEL")
+	log.SetFormatter(&log.JSONFormatter{})
+	level, err := log.ParseLevel(loglevel)
+	if err != nil {
+		level = log.WarnLevel
+	}
+	log.SetLevel(level)
 
 	bucket := os.Getenv("CONFIG_BUCKET")
 	key := os.Getenv("CONFIG_KEY")
@@ -17,7 +24,6 @@ func init() {
 		log.Fatalf("CONFIG_BUCKET or CONFIG_KEY empty")
 	}
 
-	var err error
 	jwtAuthorizer, err = auth.NewJWTAuthorizationHandler(bucket, key)
 	if err != nil {
 		log.Fatalf("Error initializing: %v", err)

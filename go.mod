@@ -9,5 +9,6 @@ require (
 	github.com/buger/jsonparser v1.1.1
 	github.com/dgrijalva/jwt-go v3.2.0+incompatible
 	github.com/golang/mock v1.5.0
+	github.com/sirupsen/logrus v1.8.1
 	github.com/stretchr/testify v1.6.1
 )
