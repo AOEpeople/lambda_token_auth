@@ -66,12 +66,13 @@ func NewHandler(auth Authorizer) Handler {
 			return RespondError(ctx, fmt.Errorf("invalid arguments"), http.StatusBadRequest)
 		}
 
-		if !auth.AwsConsumer().ValidateRole(event.Query.Role) {
+		iamRules, err := auth.AwsConsumer().RetrieveRulesFromRoleTags(event.Query.Role)
+		if err != nil{
 			return RespondError(ctx, fmt.Errorf("invalid IAM role ARN"), http.StatusBadRequest)
 		}
-
 		logger.Infof("Retrieved Event for Role %s\n%s", event.Query.Role, event.Headers.Authorization)
 
+		rules := append(auth.Config().Rules, iamRules...)
 		claims, err := auth.TokenValidator().RetrieveClaimsFromToken(ctx, event.Headers.Authorization)
 		if err != nil {
 			return RespondError(ctx, err, http.StatusUnauthorized)
@@ -79,7 +80,7 @@ func NewHandler(auth Authorizer) Handler {
 		logger.Debugf("Claims JSON: %s", claims.ClaimsJSON)
 		logger.Infof("Validated Token")
 
-		role, err := auth.TokenValidator().ValidateClaimsForRule(ctx, claims, event.Query.Role, auth.Config().Rules)
+		role, err := auth.TokenValidator().ValidateClaimsForRule(ctx, claims, event.Query.Role, rules)
 		if err != nil {
 			return RespondError(ctx, err, http.StatusInternalServerError)
 		} else if role == nil {

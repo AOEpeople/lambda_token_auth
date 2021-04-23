@@ -1,13 +1,16 @@
 package auth
 
 import (
+	"encoding/base64"
 	"encoding/json"
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/aws/session"
+	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/s3"
 	"github.com/aws/aws-sdk-go/service/sts"
 	"regexp"
+	"strings"
 )
 
 // AwsConsumerInterface encapsulates all actions performs with the AWS services
@@ -16,8 +19,8 @@ type AwsConsumerInterface interface {
 	ReadConfiguration(config *Config, bucket string, key string) error
 	// AssumeRole performs this for the give rule
 	AssumeRole(rule *Rule, name string) (*sts.Credentials, error)
-	// ValidateRole checks wether a string matches the rule format
-	ValidateRole(role string) bool
+	// RetrieveRulesFromRoleTags checks wether a string matches the rule format
+	RetrieveRulesFromRoleTags(role string) ([]Rule, error)
 }
 
 // AwsConsumer is the implementation of AwsConsumerInterface
@@ -73,8 +76,36 @@ func (a *AwsConsumer) AssumeRole(rule *Rule, name string) (*sts.Credentials, err
 	return result.Credentials, nil
 }
 
-// ValidateRole checks whether a string matches the rule format
-func (a *AwsConsumer) ValidateRole(role string) bool {
+// RetrieveRulesFromRoleTags checks the IAM role for further rules configured through tags
+func (a *AwsConsumer) RetrieveRulesFromRoleTags(role string) ([]Rule, error) {
 	validRole := regexp.MustCompile(`^arn:aws:iam::\d{12}:role/[a-zA-Z0-9-_]+$`)
-	return validRole.MatchString(role)
+	if !validRole.MatchString(role) {
+		return nil, fmt.Errorf("invalid role format")
+	}
+
+	sess, err := session.NewSession(&aws.Config{})
+	if err != nil {
+		return nil, fmt.Errorf("unable to create a new AWS session: %w", err)
+	}
+	svc := iam.New(sess)
+	result, err := svc.GetRole(&iam.GetRoleInput{
+		RoleName: &role,
+	})
+	var rules []Rule
+	for _, tag := range result.Role.Tags {
+		if !strings.HasPrefix(*tag.Key,"token_auth/") {
+			continue
+		}
+		ruleDecoded, err := base64.StdEncoding.DecodeString(*tag.Value)
+		if err != nil {
+			continue
+		}
+		rule := Rule{}
+		err = json.Unmarshal(ruleDecoded, rule)
+		if err != nil {
+			continue
+		}
+		rules = append(rules, rule)
+	}
+	return rules, nil
 }
