@@ -3,7 +3,7 @@
 
 This implements a AWS Lambda handler which takes a JWT-Token, validates it and then performs a Aws:Sts:AssumeRole based on preconfigured rules. It's similar to the existing (offical) TokenAuthorizer but allows more complexity in it's configuration.
 
-Practical usage could e.g. allow to authenticate a Gitlab-CI pipeline through the [`CI_JOB_JWT` token](https://docs.gitlab.com/ee/ci/secrets/index.html) without requiring additional long-term authentication credentials. 
+Practical usage could e.g. allow to authenticate a Gitlab-CI pipeline through the [`CI_JOB_JWT` token](https://docs.gitlab.com/ee/ci/secrets/index.html) without requiring additional long-term authentication credentials. The [claims within the token](https://docs.gitlab.com/ee/ci/examples/authenticating-with-hashicorp-vault/#how-it-works) allow very fine grained control which is not possible otherwise.  
 
 ## Configuration
 
