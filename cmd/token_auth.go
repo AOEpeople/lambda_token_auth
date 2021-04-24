@@ -24,7 +24,7 @@ func init() {
 		log.Fatalf("CONFIG_BUCKET or CONFIG_KEY empty")
 	}
 
-	jwtAuthorizer, err = auth.NewJWTAuthorizationHandler(bucket, key)
+	jwtAuthorizer, err = auth.NewJWTAuthorizer(bucket, key)
 	if err != nil {
 		log.Fatalf("Error initializing: %v", err)
 	}
