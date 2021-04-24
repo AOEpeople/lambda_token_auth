@@ -12,11 +12,11 @@ import (
 
 // AwsConsumerInterface encapsulates all actions performs with the AWS services
 type AwsConsumerInterface interface {
-	// ReadConfiguration reads the configured S3 Bucket and returns Config
+	// ReadConfiguration reads the configured S3 Bucket and refreshes the Config
 	ReadConfiguration() error
 	// JwksUrl returns the configured JwksUrl
 	JwksUrl() string
-	// Rules
+	// Rules holds the globals rules loaded from the S3 bucket
 	Rules() []Rule
 	// AssumeRole performs this for the give rule
 	AssumeRole(rule *Rule, name string) (*sts.Credentials, error)

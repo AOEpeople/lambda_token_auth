@@ -9,7 +9,7 @@ import (
 	"io"
 )
 
-// AwsServiceWrapperInterface allows to test AWS specific code based on the AWS
+// AwsServiceWrapperInterface allows to test AWS specific code based on the AWS services
 type AwsServiceWrapperInterface interface {
 	GetS3Object(bucket, key string) (io.ReadCloser, error)
 	AssumeRole(input *sts.AssumeRoleInput) (*sts.AssumeRoleOutput, error)

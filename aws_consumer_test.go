@@ -152,6 +152,33 @@ func TestAwsConsumer_RetrieveRulesFromRoleTags(t *testing.T) {
 		assert.Equal(t, "arn:AWS:iam::012345678910:role/assume-me", credentials[0].Role)
 	})
 
+
+	t.Run("disabled role annotations", func(t *testing.T) {
+		ctrl := gomock.NewController(t)
+		defer ctrl.Finish()
+
+		var tags []*iam.Tag
+		tags = append(tags, &iam.Tag{Key: aws.String("token_auth/1"), Value: aws.String(base64.StdEncoding.EncodeToString([]byte("{\"field\":\"valid\"}")))})
+		tags = append(tags, &iam.Tag{Key: aws.String("name"), Value: aws.String("assume-me")})
+
+		serviceWrapper := mock.NewMockAwsServiceWrapperInterface(ctrl)
+		serviceWrapper.EXPECT().GetRole(gomock.Any()).Return(&iam.GetRoleOutput{
+			Role: &iam.Role{
+				Tags: tags,
+			},
+		}, nil)
+
+		consumer := auth.AwsConsumer{
+			AWS: serviceWrapper,
+			Config: &auth.Config{
+				EnableRoleAnnotations: false,
+			},
+		}
+		credentials, err := consumer.RetrieveRulesFromRoleTags("arn:AWS:iam::012345678910:role/assume-me")
+		assert.NoError(t, err)
+		assert.Empty(t, credentials)
+	})
+
 	t.Run("missing role", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
@@ -184,7 +211,9 @@ func TestAwsConsumer_RetrieveRulesFromRoleTags(t *testing.T) {
 
 		consumer := auth.AwsConsumer{
 			AWS:    serviceWrapper,
-			Config: &auth.Config{},
+			Config: &auth.Config{
+				EnableRoleAnnotations: true,
+			},
 		}
 		credentials, err := consumer.RetrieveRulesFromRoleTags("arn:AWS:iam::012345678910:role/assume-me")
 		assert.NoError(t, err)
