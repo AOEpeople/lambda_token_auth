@@ -61,20 +61,20 @@ func TestTokenValidator_MatchClaimsInternal(t *testing.T) {
 	t.Run("error handling", func(t *testing.T) {
 		tests := map[string]TestCase{
 			"01_empty": {
-				Claims:  "",
-				Rules:   "",
+				Claims: "",
+				Rules:  "",
 			},
 			"02_array_handling": {
-				Claims:  "{\"roles\": [\"key\": \"value\"]}",
-				Rules:   "{\"roles\": [\"key\": \"value\"]}",
+				Claims: "{\"roles\": [\"key\": \"value\"]}",
+				Rules:  "{\"roles\": [\"key\": \"value\"]}",
 			},
 			"03_nested_error_handling": {
-				Claims:  "{\"roles\": {\"sub\": [\"key\": \"value\"]}",
-				Rules:   "{\"roles\": {\"sub\": [\"key\": \"value\"]}",
+				Claims: "{\"roles\": {\"sub\": [\"key\": \"value\"]}",
+				Rules:  "{\"roles\": {\"sub\": [\"key\": \"value\"]}",
 			},
 			"04_null": {
-				Claims:  "{\"namespace_id\": \"172\", \"roles\": null}",
-				Rules:   "{\"namespace_id\": \"172\", \"roles\": null}",
+				Claims: "{\"namespace_id\": \"172\", \"roles\": null}",
+				Rules:  "{\"namespace_id\": \"172\", \"roles\": null}",
 			},
 		}
 		ctx := context.TODO()
@@ -96,13 +96,13 @@ func TestTokenValidator_MatchClaims(t *testing.T) {
 
 	t.Run("match", func(t *testing.T) {
 		tokenValidator := auth.TokenValidator{}
-		result := tokenValidator.MatchClaims(ctx,claims,claimJson)
+		result := tokenValidator.MatchClaims(ctx, claims, claimJson)
 		assert.Equal(t, true, result)
 	})
 
 	t.Run("mismatch", func(t *testing.T) {
 		tokenValidator := auth.TokenValidator{}
-		result := tokenValidator.MatchClaims(ctx,claims,[]byte("{\"namespace_id\": \"12\"}"))
+		result := tokenValidator.MatchClaims(ctx, claims, []byte("{\"namespace_id\": \"12\"}"))
 		assert.Equal(t, false, result)
 	})
 	t.Run("unsupported json", func(t *testing.T) {
@@ -111,7 +111,7 @@ func TestTokenValidator_MatchClaims(t *testing.T) {
 		claims := &auth.Claims{ClaimsJSON: claimJson}
 
 		tokenValidator := auth.TokenValidator{}
-		result := tokenValidator.MatchClaims(ctx,claims,claimJson)
+		result := tokenValidator.MatchClaims(ctx, claims, claimJson)
 		assert.Equal(t, false, result)
 	})
 }

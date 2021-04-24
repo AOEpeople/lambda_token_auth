@@ -16,6 +16,11 @@ import (
 )
 
 func TestAwsConsumer_ReadConfiguration(t *testing.T) {
+
+	config := &auth.Config{
+		Bucket:    "bucket",
+		ObjectKey: "key",
+	}
 	t.Run("happy path", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
@@ -25,10 +30,11 @@ func TestAwsConsumer_ReadConfiguration(t *testing.T) {
 		serviceWrapper := mock.NewMockAwsServiceWrapperInterface(ctrl)
 		serviceWrapper.EXPECT().GetS3Object(gomock.Any(), gomock.Any()).Return(r, nil)
 
-		config := &auth.Config{}
-
-		consumer := auth.AwsConsumer{AWS: serviceWrapper}
-		err := consumer.ReadConfiguration(config, "bucket", "key")
+		consumer := auth.AwsConsumer{
+			AWS:    serviceWrapper,
+			Config: config,
+		}
+		err := consumer.ReadConfiguration()
 		assert.NoError(t, err)
 		assert.Equal(t, "https://example.org", config.JwksURL)
 	})
@@ -39,10 +45,11 @@ func TestAwsConsumer_ReadConfiguration(t *testing.T) {
 		serviceWrapper := mock.NewMockAwsServiceWrapperInterface(ctrl)
 		serviceWrapper.EXPECT().GetS3Object(gomock.Any(), gomock.Any()).Return(nil, fmt.Errorf("mimimi"))
 
-		config := &auth.Config{}
-
-		consumer := auth.AwsConsumer{AWS: serviceWrapper}
-		err := consumer.ReadConfiguration(config, "bucket", "key")
+		consumer := auth.AwsConsumer{
+			AWS:    serviceWrapper,
+			Config: config,
+		}
+		err := consumer.ReadConfiguration()
 		assert.Error(t, err)
 	})
 	t.Run("broken json", func(t *testing.T) {
@@ -54,10 +61,11 @@ func TestAwsConsumer_ReadConfiguration(t *testing.T) {
 		serviceWrapper := mock.NewMockAwsServiceWrapperInterface(ctrl)
 		serviceWrapper.EXPECT().GetS3Object(gomock.Any(), gomock.Any()).Return(r, nil)
 
-		config := &auth.Config{}
-
-		consumer := auth.AwsConsumer{AWS: serviceWrapper}
-		err := consumer.ReadConfiguration(config, "bucket", "key")
+		consumer := auth.AwsConsumer{
+			AWS:    serviceWrapper,
+			Config: config,
+		}
+		err := consumer.ReadConfiguration()
 		assert.Error(t, err)
 	})
 }

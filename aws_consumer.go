@@ -13,7 +13,11 @@ import (
 // AwsConsumerInterface encapsulates all actions performs with the AWS services
 type AwsConsumerInterface interface {
 	// ReadConfiguration reads the configured S3 Bucket and returns Config
-	ReadConfiguration(config *Config, bucket string, key string) error
+	ReadConfiguration() error
+	// JwksUrl returns the configured JwksUrl
+	JwksUrl() string
+	// Rules
+	Rules() []Rule
 	// AssumeRole performs this for the give rule
 	AssumeRole(rule *Rule, name string) (*sts.Credentials, error)
 	// RetrieveRulesFromRoleTags checks wether a string matches the rule format
@@ -27,21 +31,26 @@ type AwsConsumer struct {
 }
 
 // NewAwsConsumer constructs a new consumer with the proper ServiceWrapper
-func NewAwsConsumer(config *Config) *AwsConsumer {
-	return &AwsConsumer{
+func NewAwsConsumer(config *Config) (*AwsConsumer, error) {
+	consumer := &AwsConsumer{
 		AWS:    &AwsServiceWrapper{},
 		Config: config,
 	}
+	err := consumer.ReadConfiguration()
+	if err != nil {
+		return nil, err
+	}
+	return consumer, nil
 }
 
 // ReadConfiguration reads the configured S3 Bucket and returns Config
-func (a *AwsConsumer) ReadConfiguration(config *Config, bucket string, key string) error {
-	content, err := a.AWS.GetS3Object(bucket, key)
+func (a *AwsConsumer) ReadConfiguration() error {
+	content, err := a.AWS.GetS3Object(a.Config.Bucket, a.Config.ObjectKey)
 	if err != nil {
 		return err
 	}
 	decoder := json.NewDecoder(content)
-	if err := decoder.Decode(config); err != nil {
+	if err := decoder.Decode(a.Config); err != nil {
 		return fmt.Errorf("Unable to read RULES inputClaims.\n Error: %v", err)
 	}
 	defer content.Close()
@@ -103,4 +112,12 @@ func (a *AwsConsumer) RetrieveRulesFromRoleTags(role string) ([]Rule, error) {
 		rules = append(rules, rule)
 	}
 	return rules, nil
+}
+
+func (a *AwsConsumer) Rules() []Rule {
+	return a.Config.Rules
+}
+
+func (a *AwsConsumer) JwksUrl() string {
+	return a.Config.JwksURL
 }

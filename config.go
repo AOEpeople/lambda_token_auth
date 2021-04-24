@@ -2,6 +2,8 @@ package auth
 
 // Config holds all configuration for the Handler
 type Config struct {
+	Bucket                string
+	ObjectKey             string
 	JwksURL               string `json:"jwks_url"`
 	EnableRoleAnnotations bool   `json:"enable_role_annotations"`
 	Region                string `json:"region"`

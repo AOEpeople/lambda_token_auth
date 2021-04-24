@@ -21,8 +21,9 @@ func TestAuthorizationHandler(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		authorizer := mock.NewMockAuthorizer(ctrl)
-		handler := auth.NewHandler(authorizer)
+		validator := mock.NewMockTokenValidatorInterface(ctrl)
+		consumer := mock.NewMockAwsConsumerInterface(ctrl)
+		handler := auth.NewHandler(consumer, validator)
 		response, err := handler(ctx, auth.Event{})
 		assert.NoError(t, err)
 		assert.Equal(t, "invalid arguments", response.Body)
@@ -49,24 +50,16 @@ func TestAuthorizationHandler(t *testing.T) {
 				Subject: "hans",
 			}}
 
-		tokenValidator := mock.NewMockTokenValidatorInterface(ctrl)
-		tokenValidator.EXPECT().RetrieveClaimsFromToken(gomock.Any(), gomock.Eq("token")).Return(&claims, nil)
-		tokenValidator.EXPECT().ValidateClaimsForRule(gomock.Any(), gomock.Eq(&claims), gomock.Eq("one"), gomock.Eq(rules)).Return(&rules[0], nil)
+		validator := mock.NewMockTokenValidatorInterface(ctrl)
+		validator.EXPECT().RetrieveClaimsFromToken(gomock.Any(), gomock.Eq("token")).Return(&claims, nil)
+		validator.EXPECT().ValidateClaimsForRule(gomock.Any(), gomock.Eq(&claims), gomock.Eq("one"), gomock.Eq(rules)).Return(&rules[0], nil)
 
-		awsConsumer := mock.NewMockAwsConsumerInterface(ctrl)
-		awsConsumer.EXPECT().RetrieveRulesFromRoleTags(gomock.Eq("one")).Return(nil, nil)
-		awsConsumer.EXPECT().AssumeRole(gomock.Eq(&rules[0]), gomock.Eq("hans")).Return(&sts.Credentials{}, nil)
+		consumer := mock.NewMockAwsConsumerInterface(ctrl)
+		consumer.EXPECT().RetrieveRulesFromRoleTags(gomock.Eq("one")).Return(nil, nil)
+		consumer.EXPECT().AssumeRole(gomock.Eq(&rules[0]), gomock.Eq("hans")).Return(&sts.Credentials{}, nil)
+		consumer.EXPECT().Rules().Return(rules)
 
-		authorizer := mock.NewMockAuthorizer(ctrl)
-		authorizer.EXPECT().Config().Return(&auth.Config{
-			Rules: rules,
-		})
-		authorizer.EXPECT().TokenValidator().Return(tokenValidator)
-		authorizer.EXPECT().TokenValidator().Return(tokenValidator)
-		authorizer.EXPECT().AwsConsumer().Return(awsConsumer)
-		authorizer.EXPECT().AwsConsumer().Return(awsConsumer)
-
-		handler := auth.NewHandler(authorizer)
+		handler := auth.NewHandler(consumer, validator)
 		event := auth.Event{
 			Headers: auth.EventHeaders{Authorization: "token", Accept: "application/json"},
 			Query:   auth.EventQuery{Role: "one"},
@@ -93,24 +86,16 @@ func TestAuthorizationHandler(t *testing.T) {
 				Subject: "hans",
 			}}
 
-		tokenValidator := mock.NewMockTokenValidatorInterface(ctrl)
-		tokenValidator.EXPECT().RetrieveClaimsFromToken(gomock.Any(), gomock.Eq("token")).Return(&claims, nil)
-		tokenValidator.EXPECT().ValidateClaimsForRule(gomock.Any(), gomock.Eq(&claims), gomock.Eq("one"), gomock.Eq(iamRules)).Return(&iamRules[0], nil)
+		validator := mock.NewMockTokenValidatorInterface(ctrl)
+		validator.EXPECT().RetrieveClaimsFromToken(gomock.Any(), gomock.Eq("token")).Return(&claims, nil)
+		validator.EXPECT().ValidateClaimsForRule(gomock.Any(), gomock.Eq(&claims), gomock.Eq("one"), gomock.Eq(iamRules)).Return(&iamRules[0], nil)
 
-		awsConsumer := mock.NewMockAwsConsumerInterface(ctrl)
-		awsConsumer.EXPECT().RetrieveRulesFromRoleTags(gomock.Eq("one")).Return(iamRules, nil)
-		awsConsumer.EXPECT().AssumeRole(gomock.Eq(&iamRules[0]), gomock.Eq("hans")).Return(&sts.Credentials{}, nil)
+		consumer := mock.NewMockAwsConsumerInterface(ctrl)
+		consumer.EXPECT().RetrieveRulesFromRoleTags(gomock.Eq("one")).Return(iamRules, nil)
+		consumer.EXPECT().AssumeRole(gomock.Eq(&iamRules[0]), gomock.Eq("hans")).Return(&sts.Credentials{}, nil)
+		consumer.EXPECT().Rules().Return(globalRules)
 
-		authorizer := mock.NewMockAuthorizer(ctrl)
-		authorizer.EXPECT().Config().Return(&auth.Config{
-			Rules: globalRules,
-		})
-		authorizer.EXPECT().TokenValidator().Return(tokenValidator)
-		authorizer.EXPECT().TokenValidator().Return(tokenValidator)
-		authorizer.EXPECT().AwsConsumer().Return(awsConsumer)
-		authorizer.EXPECT().AwsConsumer().Return(awsConsumer)
-
-		handler := auth.NewHandler(authorizer)
+		handler := auth.NewHandler(consumer, validator)
 		event := auth.Event{
 			Headers: auth.EventHeaders{Authorization: "token", Accept: "application/json"},
 			Query:   auth.EventQuery{Role: "one"},

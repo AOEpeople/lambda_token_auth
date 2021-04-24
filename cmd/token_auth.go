@@ -7,7 +7,8 @@ import (
 	auth "token_authorizer"
 )
 
-var jwtAuthorizer *auth.JWTAuthorizer
+var awsConsumer *auth.AwsConsumer
+var tokenValidator *auth.TokenValidator
 
 func init() {
 	loglevel := os.Getenv("LOGLEVEL")
@@ -24,13 +25,21 @@ func init() {
 		log.Fatalf("CONFIG_BUCKET or CONFIG_KEY empty")
 	}
 
-	jwtAuthorizer, err = auth.NewJWTAuthorizer(bucket, key)
+	config := &auth.Config{
+		Bucket:                bucket,
+		ObjectKey:             key,
+		Duration:              3600,
+		EnableRoleAnnotations: false,
+	}
+
+	awsConsumer, err := auth.NewAwsConsumer(config)
 	if err != nil {
 		log.Fatalf("Error initializing: %v", err)
 	}
+	tokenValidator = auth.NewTokenValidator(awsConsumer.JwksUrl())
 }
 
 func main() {
-	authHandler := auth.NewHandler(jwtAuthorizer)
+	authHandler := auth.NewHandler(awsConsumer, tokenValidator)
 	lambda.Start(authHandler)
 }
