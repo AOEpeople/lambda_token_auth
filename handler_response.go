@@ -11,10 +11,10 @@ import (
 // HandlerResponse the response format expected by Lambda
 // see https://docs.aws.amazon.com/apigateway/latest/developerguide/http-api-develop-integrations-lambda.html
 type HandlerResponse struct {
-	IsBase64Encoded bool `json:"isBase64Encoded,omitempty"`
-	StatusCode      int  `json:"statusCode,omitempty"`
-	Headers map[string]string `json:"headers,omitempty"`
-	Body string `json:"body,omitempty"`
+	IsBase64Encoded bool              `json:"isBase64Encoded,omitempty"`
+	StatusCode      int               `json:"statusCode,omitempty"`
+	Headers         map[string]string `json:"headers,omitempty"`
+	Body            string            `json:"body,omitempty"`
 }
 
 // RespondError format a response with an error message
@@ -22,18 +22,18 @@ func RespondError(ctx context.Context, err error, statusCode int) (HandlerRespon
 	Logger(ctx).Errorf("error response of request %d, %s", statusCode, err.Error())
 	return HandlerResponse{
 		StatusCode: statusCode,
-		Body: err.Error(),
+		Body:       err.Error(),
 	}, nil
 }
 
 // RespondShellscript format a response as a shellscript
 func RespondShellscript(ctx context.Context, credentials *sts.Credentials) (HandlerResponse, error) {
-	data := fmt.Sprintf("export AWS_ACCESS_KEY_ID=\"%s\"\n" +
-		"export AWS_SECRET_ACCESS_KEY=\"%s\"\n" +
+	data := fmt.Sprintf("export AWS_ACCESS_KEY_ID=\"%s\"\n"+
+		"export AWS_SECRET_ACCESS_KEY=\"%s\"\n"+
 		"export AWS_SESSION_TOKEN=\"%s\"\n",
-			*credentials.AccessKeyId,
-			*credentials.SecretAccessKey,
-			*credentials.SessionToken)
+		*credentials.AccessKeyId,
+		*credentials.SecretAccessKey,
+		*credentials.SessionToken)
 	Logger(ctx).Debug("response successful - responding credentials as script")
 	return HandlerResponse{
 		StatusCode: http.StatusOK,

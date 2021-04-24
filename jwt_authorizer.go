@@ -14,7 +14,7 @@ type JWTAuthorizer struct {
 // NewJWTAuthorizationHandler instantiates a JWTAuthorizer
 func NewJWTAuthorizationHandler(bucket, key string) (*JWTAuthorizer, error) {
 	config := &Config{
-		Duration: 3600,
+		Duration:              3600,
 		EnableRoleAnnotations: false,
 	}
 

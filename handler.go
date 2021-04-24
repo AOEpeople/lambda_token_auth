@@ -42,9 +42,11 @@ type Rule struct {
 }
 
 type correlationIDType int
+
 const (
 	requestIDKey correlationIDType = iota
 )
+
 // Handler lambda function interface
 type Handler func(ctx context.Context, event Event) (HandlerResponse, error)
 
@@ -59,7 +61,7 @@ func NewHandler(auth Authorizer) Handler {
 		}
 
 		iamRules, err := auth.AwsConsumer().RetrieveRulesFromRoleTags(event.Query.Role)
-		if err != nil{
+		if err != nil {
 			return RespondError(ctx, fmt.Errorf("invalid IAM role ARN"), http.StatusBadRequest)
 		}
 		logger.Infof("Retrieved Event for Role %s\n%s", event.Query.Role, event.Headers.Authorization)

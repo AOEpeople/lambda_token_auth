@@ -22,14 +22,14 @@ type AwsConsumerInterface interface {
 
 // AwsConsumer is the implementation of AwsConsumerInterface
 type AwsConsumer struct {
-	AWS AwsServiceWrapperInterface
+	AWS    AwsServiceWrapperInterface
 	Config *Config
 }
 
 // NewAwsConsumer constructs a new consumer with the proper ServiceWrapper
 func NewAwsConsumer(config *Config) *AwsConsumer {
 	return &AwsConsumer{
-		AWS: &AwsServiceWrapper{},
+		AWS:    &AwsServiceWrapper{},
 		Config: config,
 	}
 }
@@ -51,7 +51,7 @@ func (a *AwsConsumer) ReadConfiguration(config *Config, bucket string, key strin
 // AssumeRole performs this for the give rule
 func (a *AwsConsumer) AssumeRole(rule *Rule, name string) (*sts.Credentials, error) {
 	duration := rule.Duration
-	if duration==0 {
+	if duration == 0 {
 		duration = a.Config.Duration
 	}
 	roleToAssumeArn := rule.Role
@@ -88,7 +88,7 @@ func (a *AwsConsumer) RetrieveRulesFromRoleTags(role string) ([]Rule, error) {
 
 	var rules []Rule
 	for _, tag := range result.Role.Tags {
-		if !strings.HasPrefix(*tag.Key,"token_auth/") {
+		if !strings.HasPrefix(*tag.Key, "token_auth/") {
 			continue
 		}
 		tagDecoded, err := base64.StdEncoding.DecodeString(*tag.Value)
@@ -96,8 +96,8 @@ func (a *AwsConsumer) RetrieveRulesFromRoleTags(role string) ([]Rule, error) {
 			continue
 		}
 		rule := Rule{
-			Role: role,
-			Duration: a.Config.Duration,
+			Role:        role,
+			Duration:    a.Config.Duration,
 			ClaimValues: tagDecoded,
 		}
 		rules = append(rules, rule)

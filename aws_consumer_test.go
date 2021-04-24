@@ -30,7 +30,7 @@ func TestAwsConsumer_ReadConfiguration(t *testing.T) {
 		consumer := auth.AwsConsumer{AWS: serviceWrapper}
 		err := consumer.ReadConfiguration(config, "bucket", "key")
 		assert.NoError(t, err)
-		assert.Equal(t,"https://example.org", config.JwksURL )
+		assert.Equal(t, "https://example.org", config.JwksURL)
 	})
 	t.Run("error handling", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
@@ -70,15 +70,15 @@ func TestAwsConsumer_AssumeRole(t *testing.T) {
 
 		serviceWrapper := mock.NewMockAwsServiceWrapperInterface(ctrl)
 		serviceWrapper.EXPECT().AssumeRole(gomock.Eq(&sts.AssumeRoleInput{
-			DurationSeconds: aws.Int64( 0),
-			RoleArn: aws.String( "role:arn"),
+			DurationSeconds: aws.Int64(0),
+			RoleArn:         aws.String("role:arn"),
 			RoleSessionName: aws.String("one"),
 		})).Return(&sts.AssumeRoleOutput{
 			Credentials: &sts.Credentials{AccessKeyId: aws.String("key")},
 		}, nil)
 
 		consumer := auth.AwsConsumer{
-			AWS: serviceWrapper,
+			AWS:    serviceWrapper,
 			Config: &auth.Config{},
 		}
 		credentials, err := consumer.AssumeRole(&auth.Rule{
@@ -96,7 +96,7 @@ func TestAwsConsumer_AssumeRole(t *testing.T) {
 		serviceWrapper.EXPECT().AssumeRole(gomock.Any()).Return(nil, fmt.Errorf("mimimi"))
 
 		consumer := auth.AwsConsumer{
-			AWS: serviceWrapper,
+			AWS:    serviceWrapper,
 			Config: &auth.Config{},
 		}
 		credentials, err := consumer.AssumeRole(&auth.Rule{
@@ -121,7 +121,7 @@ func TestAwsConsumer_RetrieveRulesFromRoleTags(t *testing.T) {
 		defer ctrl.Finish()
 
 		var tags []*iam.Tag
-		tags = append(tags, &iam.Tag{Key: aws.String("token_auth/1"), Value: aws.String( base64.StdEncoding.EncodeToString([]byte("{\"field\":\"valid\"}")))})
+		tags = append(tags, &iam.Tag{Key: aws.String("token_auth/1"), Value: aws.String(base64.StdEncoding.EncodeToString([]byte("{\"field\":\"valid\"}")))})
 		tags = append(tags, &iam.Tag{Key: aws.String("name"), Value: aws.String("assume-me")})
 
 		serviceWrapper := mock.NewMockAwsServiceWrapperInterface(ctrl)
@@ -152,7 +152,7 @@ func TestAwsConsumer_RetrieveRulesFromRoleTags(t *testing.T) {
 		serviceWrapper.EXPECT().GetRole(gomock.Any()).Return(nil, fmt.Errorf("not found"))
 
 		consumer := auth.AwsConsumer{
-			AWS: serviceWrapper,
+			AWS:    serviceWrapper,
 			Config: &auth.Config{},
 		}
 		credentials, err := consumer.RetrieveRulesFromRoleTags("arn:AWS:iam::012345678910:role/assume-me")
@@ -165,7 +165,7 @@ func TestAwsConsumer_RetrieveRulesFromRoleTags(t *testing.T) {
 		defer ctrl.Finish()
 
 		var tags []*iam.Tag
-		tags = append(tags, &iam.Tag{Key: aws.String("token_auth/1"), Value: aws.String( "notbase64")})
+		tags = append(tags, &iam.Tag{Key: aws.String("token_auth/1"), Value: aws.String("notbase64")})
 
 		serviceWrapper := mock.NewMockAwsServiceWrapperInterface(ctrl)
 		serviceWrapper.EXPECT().GetRole(gomock.Any()).Return(&iam.GetRoleOutput{
@@ -175,7 +175,7 @@ func TestAwsConsumer_RetrieveRulesFromRoleTags(t *testing.T) {
 		}, nil)
 
 		consumer := auth.AwsConsumer{
-			AWS: serviceWrapper,
+			AWS:    serviceWrapper,
 			Config: &auth.Config{},
 		}
 		credentials, err := consumer.RetrieveRulesFromRoleTags("arn:AWS:iam::012345678910:role/assume-me")
