@@ -33,14 +33,6 @@ type Claims struct {
 	StandardClaims *jwt.StandardClaims
 }
 
-// Config holds all configuration for the Handler
-type Config struct {
-	JwksURL  string `json:"jwks_url"`
-	Region   string `json:"region"`
-	Duration int64  `json:"duration"`
-	Rules    []Rule `json:"rules"`
-}
-
 // Rule represents a single claim to role mapping
 type Rule struct {
 	Role        string          `json:"role"`

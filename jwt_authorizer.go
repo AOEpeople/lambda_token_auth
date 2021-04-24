@@ -13,9 +13,14 @@ type JWTAuthorizer struct {
 
 // NewJWTAuthorizationHandler instantiates a JWTAuthorizer
 func NewJWTAuthorizationHandler(bucket, key string) (*JWTAuthorizer, error) {
+	config := &Config{
+		Duration: 3600,
+		EnableRoleAnnotations: false,
+	}
+
 	authHandler := JWTAuthorizer{}
-	authHandler.awsConsumer = &AwsConsumer{}
-	authHandler.config = &Config{}
+	authHandler.awsConsumer = NewAwsConsumer(config)
+	authHandler.config = config
 
 	err := authHandler.awsConsumer.ReadConfiguration(authHandler.config, bucket, key)
 	if err != nil {
