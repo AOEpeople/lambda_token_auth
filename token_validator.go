@@ -120,12 +120,10 @@ func MatchClaimsInternal(ctx context.Context, claims []byte, rules []byte) (bool
 func (t *TokenValidator) MatchClaims(ctx context.Context, tokenClaims *Claims, ruleClaims []byte) bool {
 	Logger(ctx).Debugf("Rules JSON: %s", ruleClaims)
 	match, err := MatchClaimsInternal(ctx, tokenClaims.ClaimsJSON, ruleClaims)
-	//TODO improve error handling
 	if err != nil {
-		Logger(ctx).Fatalf("error matching claims: %s", err)
+		Logger(ctx).Warnf("error matching claims: %s", err)
 	}
-
-	return match
+	return match && err == nil
 }
 
 // ValidateClaimsForRule check if
