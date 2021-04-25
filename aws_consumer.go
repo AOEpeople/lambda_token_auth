@@ -14,8 +14,8 @@ import (
 type AwsConsumerInterface interface {
 	// ReadConfiguration reads the configured S3 Bucket and refreshes the Config
 	ReadConfiguration() error
-	// JwksUrl returns the configured JwksUrl
-	JwksUrl() string
+	// JwksURL returns the configured JWK url
+	JwksURL() string
 	// Rules holds the globals rules loaded from the S3 bucket
 	Rules() []Rule
 	// AssumeRole performs this for the give rule
@@ -114,10 +114,12 @@ func (a *AwsConsumer) RetrieveRulesFromRoleTags(role string) ([]Rule, error) {
 	return rules, nil
 }
 
+// Rules returns the list of claim to role configuration rules
 func (a *AwsConsumer) Rules() []Rule {
 	return a.Config.Rules
 }
 
-func (a *AwsConsumer) JwksUrl() string {
+// JwksURL forwards the url from the configuration
+func (a *AwsConsumer) JwksURL() string {
 	return a.Config.JwksURL
 }

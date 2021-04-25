@@ -36,7 +36,7 @@ func init() {
 	if err != nil {
 		log.Fatalf("Error initializing: %v", err)
 	}
-	tokenValidator = auth.NewTokenValidator(awsConsumer.JwksUrl())
+	tokenValidator = auth.NewTokenValidator(awsConsumer.JwksURL())
 }
 
 func main() {

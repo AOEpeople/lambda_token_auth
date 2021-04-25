@@ -51,9 +51,9 @@ func (mr *MockAwsConsumerInterfaceMockRecorder) AssumeRole(rule, name interface{
 }
 
 // JwksUrl mocks base method.
-func (m *MockAwsConsumerInterface) JwksUrl() string {
+func (m *MockAwsConsumerInterface) JwksURL() string {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "JwksUrl")
+	ret := m.ctrl.Call(m, "JwksURL")
 	ret0, _ := ret[0].(string)
 	return ret0
 }
@@ -61,7 +61,7 @@ func (m *MockAwsConsumerInterface) JwksUrl() string {
 // JwksUrl indicates an expected call of JwksUrl.
 func (mr *MockAwsConsumerInterfaceMockRecorder) JwksUrl() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "JwksUrl", reflect.TypeOf((*MockAwsConsumerInterface)(nil).JwksUrl))
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "JwksURL", reflect.TypeOf((*MockAwsConsumerInterface)(nil).JwksURL))
 }
 
 // ReadConfiguration mocks base method.
