@@ -91,13 +91,13 @@ func (a *AwsConsumer) RetrieveRulesFromRoleTags(role string) ([]Rule, error) {
 		return nil, err
 	}
 
-	if !a.Config.EnableRoleAnnotations {
+	if !a.Config.EnableRoleAnnotations || len(a.Config.RoleAnnotationPrefix) == 0 {
 		return nil, nil
 	}
 
 	var rules []Rule
 	for _, tag := range result.Role.Tags {
-		if !strings.HasPrefix(*tag.Key, "token_auth/") {
+		if !strings.HasPrefix(*tag.Key, a.Config.RoleAnnotationPrefix) {
 			continue
 		}
 		tagDecoded, err := base64.StdEncoding.DecodeString(*tag.Value)

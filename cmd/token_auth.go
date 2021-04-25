@@ -30,6 +30,7 @@ func init() {
 		ObjectKey:             key,
 		Duration:              3600,
 		EnableRoleAnnotations: false,
+		RoleAnnotationPrefix: "token_auth/",
 	}
 
 	awsConsumer, err := auth.NewAwsConsumer(config)
