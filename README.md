@@ -20,6 +20,8 @@ The lambda function is configured through environment variables, and a JSON docu
 ```
 {
     "jwks_url":"https://gitlab.com/-/jwks",                          // URL which contains required JWKs key information
+    "enable_role_annotations": true,                                 // Also fetch IAM Role tags with could contain rules
+    "role_annotation_prefix": "token_auth/",                         // IAM Role Tag-Prefix which is used for the embedded rules  
     "rules":[                                                        // List of rules which would allow the AssumeRole for certain tokens
         {
             "claim_values":{                                         // The required values which the token should present
