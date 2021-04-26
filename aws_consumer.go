@@ -91,7 +91,7 @@ func (a *AwsConsumer) RetrieveRulesFromRoleTags(role string) ([]Rule, error) {
 		return nil, err
 	}
 
-	if !a.Config.EnableRoleAnnotations || len(a.Config.RoleAnnotationPrefix) == 0 {
+	if !a.Config.RoleAnnotationsEnabled || len(a.Config.RoleAnnotationPrefix) == 0 {
 		return nil, nil
 	}
 

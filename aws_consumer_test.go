@@ -142,8 +142,8 @@ func TestAwsConsumer_RetrieveRulesFromRoleTags(t *testing.T) {
 		consumer := auth.AwsConsumer{
 			AWS: serviceWrapper,
 			Config: &auth.Config{
-				EnableRoleAnnotations: true,
-				RoleAnnotationPrefix:  "token_auth/1",
+				RoleAnnotationsEnabled: true,
+				RoleAnnotationPrefix:   "token_auth/1",
 			},
 		}
 		credentials, err := consumer.RetrieveRulesFromRoleTags("arn:AWS:iam::012345678910:role/assume-me")
@@ -171,7 +171,7 @@ func TestAwsConsumer_RetrieveRulesFromRoleTags(t *testing.T) {
 		consumer := auth.AwsConsumer{
 			AWS: serviceWrapper,
 			Config: &auth.Config{
-				EnableRoleAnnotations: false,
+				RoleAnnotationsEnabled: false,
 			},
 		}
 		credentials, err := consumer.RetrieveRulesFromRoleTags("arn:AWS:iam::012345678910:role/assume-me")
@@ -197,8 +197,8 @@ func TestAwsConsumer_RetrieveRulesFromRoleTags(t *testing.T) {
 		consumer := auth.AwsConsumer{
 			AWS: serviceWrapper,
 			Config: &auth.Config{
-				EnableRoleAnnotations: true,
-				RoleAnnotationPrefix:  "token_prefix/",
+				RoleAnnotationsEnabled: true,
+				RoleAnnotationPrefix:   "token_prefix/",
 			},
 		}
 		credentials, err := consumer.RetrieveRulesFromRoleTags("arn:AWS:iam::012345678910:role/assume-me")
@@ -239,7 +239,7 @@ func TestAwsConsumer_RetrieveRulesFromRoleTags(t *testing.T) {
 		consumer := auth.AwsConsumer{
 			AWS: serviceWrapper,
 			Config: &auth.Config{
-				EnableRoleAnnotations: true,
+				RoleAnnotationsEnabled: true,
 			},
 		}
 		credentials, err := consumer.RetrieveRulesFromRoleTags("arn:AWS:iam::012345678910:role/assume-me")
