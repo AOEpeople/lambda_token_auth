@@ -62,7 +62,7 @@ func NewHandler(consumer AwsConsumerInterface, validator TokenValidatorInterface
 
 		iamRules, err := consumer.RetrieveRulesFromRoleTags(event.Query.Role)
 		if err != nil {
-			return RespondError(ctx, fmt.Errorf("invalid IAM role ARN"), http.StatusBadRequest)
+			return RespondError(ctx, err, http.StatusBadRequest)
 		}
 		logger.Infof("Retrieved Event for Role %s\n%s", event.Query.Role, event.Headers.Authorization)
 

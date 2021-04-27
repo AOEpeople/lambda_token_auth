@@ -146,11 +146,11 @@ func TestAwsConsumer_RetrieveRulesFromRoleTags(t *testing.T) {
 				RoleAnnotationPrefix:   "token_auth/1",
 			},
 		}
-		credentials, err := consumer.RetrieveRulesFromRoleTags("arn:AWS:iam::012345678910:role/assume-me")
+		credentials, err := consumer.RetrieveRulesFromRoleTags("arn:aws:iam::012345678910:role/assume-me")
 		assert.NoError(t, err)
 		assert.NotEmpty(t, credentials)
 		assert.Equal(t, 1, len(credentials))
-		assert.Equal(t, "arn:AWS:iam::012345678910:role/assume-me", credentials[0].Role)
+		assert.Equal(t, "arn:aws:iam::012345678910:role/assume-me", credentials[0].Role)
 	})
 
 	t.Run("disabled role annotations", func(t *testing.T) {
@@ -174,7 +174,7 @@ func TestAwsConsumer_RetrieveRulesFromRoleTags(t *testing.T) {
 				RoleAnnotationsEnabled: false,
 			},
 		}
-		credentials, err := consumer.RetrieveRulesFromRoleTags("arn:AWS:iam::012345678910:role/assume-me")
+		credentials, err := consumer.RetrieveRulesFromRoleTags("arn:aws:iam::012345678910:role/assume-me")
 		assert.NoError(t, err)
 		assert.Empty(t, credentials)
 	})
@@ -201,7 +201,7 @@ func TestAwsConsumer_RetrieveRulesFromRoleTags(t *testing.T) {
 				RoleAnnotationPrefix:   "token_prefix/",
 			},
 		}
-		credentials, err := consumer.RetrieveRulesFromRoleTags("arn:AWS:iam::012345678910:role/assume-me")
+		credentials, err := consumer.RetrieveRulesFromRoleTags("arn:aws:iam::012345678910:role/assume-me")
 		assert.NoError(t, err)
 		assert.Empty(t, credentials)
 	})
@@ -217,7 +217,7 @@ func TestAwsConsumer_RetrieveRulesFromRoleTags(t *testing.T) {
 			AWS:    serviceWrapper,
 			Config: &auth.Config{},
 		}
-		credentials, err := consumer.RetrieveRulesFromRoleTags("arn:AWS:iam::012345678910:role/assume-me")
+		credentials, err := consumer.RetrieveRulesFromRoleTags("arn:aws:iam::012345678910:role/assume-me")
 		assert.Error(t, err)
 		assert.Empty(t, credentials)
 	})
@@ -242,7 +242,7 @@ func TestAwsConsumer_RetrieveRulesFromRoleTags(t *testing.T) {
 				RoleAnnotationsEnabled: true,
 			},
 		}
-		credentials, err := consumer.RetrieveRulesFromRoleTags("arn:AWS:iam::012345678910:role/assume-me")
+		credentials, err := consumer.RetrieveRulesFromRoleTags("arn:aws:iam::012345678910:role/assume-me")
 		assert.NoError(t, err)
 		assert.Empty(t, credentials)
 	})

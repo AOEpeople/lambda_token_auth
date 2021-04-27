@@ -79,7 +79,7 @@ func (a *AwsConsumer) AssumeRole(rule *Rule, name string) (*sts.Credentials, err
 
 // RetrieveRulesFromRoleTags checks the IAM role for further rules configured through tags
 func (a *AwsConsumer) RetrieveRulesFromRoleTags(role string) ([]Rule, error) {
-	validRole := regexp.MustCompile(`^arn:AWS:iam::\d{12}:role/[a-zA-Z0-9-_]+$`)
+	validRole := regexp.MustCompile(`^arn:aws:iam::\d{12}:role/[a-zA-Z0-9-_]+$`)
 	if !validRole.MatchString(role) {
 		return nil, fmt.Errorf("invalid role format")
 	}
