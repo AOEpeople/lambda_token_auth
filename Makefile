@@ -2,19 +2,22 @@ BINARY_LINUX64=dist/token_auth-linux-amd64
 SOURCE=$(shell find . -name "*go" -a -not -path "./vendor/*" -not -path "./cmd/testgen/*" )
 VERSION=$(shell git describe --tags)
 
-.PHONY: assets test lint build clean
+.PHONY: assets test lint build clean coverage generate
 
 lint:
 	golangci-lint run ./...
 	golint ./...
 test:
 	go test -v ./...
+
 coverage:
 	go test -coverprofile=coverage.out ./...
 	go tool cover -html=coverage.out
 
+generate:
+	cd mock; go generate ; cd ..
+
 build:
-	cd mock && go generate && cd ..
 	cd cmd && GO111MODULE=on CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -ldflags \
 				"-s -w" -o ../$(BINARY_LINUX64)
 
