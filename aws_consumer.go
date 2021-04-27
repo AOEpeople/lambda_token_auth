@@ -4,8 +4,10 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/iam"
 	"github.com/aws/aws-sdk-go/service/sts"
+	log "github.com/sirupsen/logrus"
 	"regexp"
 	"strings"
 )
@@ -20,7 +22,7 @@ type AwsConsumerInterface interface {
 	Rules() []Rule
 	// AssumeRole performs this for the give rule
 	AssumeRole(rule *Rule, name string) (*sts.Credentials, error)
-	// RetrieveRulesFromRoleTags checks wether a string matches the rule format
+	// RetrieveRulesFromRoleTags checks whether a string matches the rule format
 	RetrieveRulesFromRoleTags(role string) ([]Rule, error)
 }
 
@@ -53,6 +55,7 @@ func (a *AwsConsumer) ReadConfiguration() error {
 	if err := decoder.Decode(a.Config); err != nil {
 		return fmt.Errorf("Unable to read RULES inputClaims.\n Error: %v", err)
 	}
+	log.Debugf("Successfully imported config %v", a.Config)
 	defer content.Close()
 	return nil
 }
@@ -78,14 +81,15 @@ func (a *AwsConsumer) AssumeRole(rule *Rule, name string) (*sts.Credentials, err
 }
 
 // RetrieveRulesFromRoleTags checks the IAM role for further rules configured through tags
-func (a *AwsConsumer) RetrieveRulesFromRoleTags(role string) ([]Rule, error) {
+func (a *AwsConsumer) RetrieveRulesFromRoleTags(roleArn string) ([]Rule, error) {
 	validRole := regexp.MustCompile(`^arn:aws:iam::\d{12}:role/[a-zA-Z0-9-_]+$`)
-	if !validRole.MatchString(role) {
+	if !validRole.MatchString(roleArn) {
 		return nil, fmt.Errorf("invalid role format")
 	}
 
+	log.Debugf("GetRole %s", roleArn[31:])
 	result, err := a.AWS.GetRole(&iam.GetRoleInput{
-		RoleName: &role,
+		RoleName: aws.String(roleArn[31:]),
 	})
 	if err != nil {
 		return nil, err
@@ -105,7 +109,7 @@ func (a *AwsConsumer) RetrieveRulesFromRoleTags(role string) ([]Rule, error) {
 			continue
 		}
 		rule := Rule{
-			Role:        role,
+			Role:        roleArn,
 			Duration:    a.Config.Duration,
 			ClaimValues: tagDecoded,
 		}

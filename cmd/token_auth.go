@@ -33,7 +33,7 @@ func init() {
 		RoleAnnotationPrefix:   "token_auth/",
 	}
 
-	awsConsumer, err := auth.NewAwsConsumer(config)
+	awsConsumer, err = auth.NewAwsConsumer(config)
 	if err != nil {
 		log.Fatalf("Error initializing: %v", err)
 	}

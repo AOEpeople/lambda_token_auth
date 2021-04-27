@@ -4,12 +4,11 @@ import (
 	"bytes"
 	"context"
 	"fmt"
-	"log"
-	"strings"
-
 	"github.com/MicahParks/keyfunc"
 	"github.com/buger/jsonparser"
 	"github.com/dgrijalva/jwt-go"
+	log "github.com/sirupsen/logrus"
+	"strings"
 )
 
 // TokenValidatorInterface interface of validation objects
@@ -21,6 +20,7 @@ type TokenValidatorInterface interface {
 
 // NewTokenValidator creates a new TokenValidator for a given system
 func NewTokenValidator(jwksURL string) *TokenValidator {
+	log.Debugf("Using %s for JWK retrival", jwksURL)
 	jwks, err := keyfunc.Get(jwksURL)
 	if err != nil {
 		log.Fatalf("Failed to get the JWKS from the given URL.\nError: %v", err)
