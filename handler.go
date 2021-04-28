@@ -40,8 +40,6 @@ type Rule struct {
 	ClaimValues json.RawMessage `json:"claim_values"`
 }
 
-type correlationIDType int
-
 // Handler lambda function interface
 type Handler func(ctx context.Context, event Event) (HandlerResponse, error)
 
