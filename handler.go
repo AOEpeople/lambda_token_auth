@@ -19,7 +19,6 @@ type Event struct {
 type EventHeaders struct {
 	Authorization string `json:"authorization"`
 	Accept        string `json:"accept,omitempty"`
-	AmznRequestID string `json:"x-amzn-RequestId,omitempty"`
 }
 
 // EventQuery all query fields we expect in a request
@@ -43,24 +42,19 @@ type Rule struct {
 
 type correlationIDType int
 
-const (
-	requestIDKey correlationIDType = iota
-)
-
 // Handler lambda function interface
 type Handler func(ctx context.Context, event Event) (HandlerResponse, error)
 
 // NewHandler creates the actual Handler function
 func NewHandler(consumer AwsConsumerInterface, validator TokenValidatorInterface) Handler {
 	return func(ctx context.Context, event Event) (HandlerResponse, error) {
-		ctx = context.WithValue(ctx, requestIDKey, event.Headers.AmznRequestID)
 		logger := Logger(ctx)
 
 		if event.Headers.Authorization == "" || event.Query.Role == "" {
 			return RespondError(ctx, fmt.Errorf("invalid arguments"), http.StatusBadRequest)
 		}
 
-		iamRules, err := consumer.RetrieveRulesFromRoleTags(event.Query.Role)
+		iamRules, err := consumer.RetrieveRulesFromRoleTags(ctx, event.Query.Role)
 		if err != nil {
 			return RespondError(ctx, err, http.StatusBadRequest)
 		}
@@ -82,7 +76,7 @@ func NewHandler(consumer AwsConsumerInterface, validator TokenValidatorInterface
 		}
 
 		logger.Infof("Retrieved request from %s to assume role %s", claims.StandardClaims.Subject, role.Role)
-		credentials, err := consumer.AssumeRole(role, claims.StandardClaims.Subject)
+		credentials, err := consumer.AssumeRole(ctx, role, claims.StandardClaims.Subject)
 		if err != nil {
 			return RespondError(ctx, err, http.StatusInternalServerError)
 		}

@@ -1,6 +1,7 @@
 package auth
 
 import (
+	"context"
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
@@ -21,9 +22,9 @@ type AwsConsumerInterface interface {
 	// Rules holds the globals rules loaded from the S3 bucket
 	Rules() []Rule
 	// AssumeRole performs this for the give rule
-	AssumeRole(rule *Rule, name string) (*sts.Credentials, error)
+	AssumeRole(ctx context.Context, rule *Rule, name string) (*sts.Credentials, error)
 	// RetrieveRulesFromRoleTags checks whether a string matches the rule format
-	RetrieveRulesFromRoleTags(role string) ([]Rule, error)
+	RetrieveRulesFromRoleTags(ctx context.Context, role string) ([]Rule, error)
 }
 
 // AwsConsumer is the implementation of AwsConsumerInterface
@@ -61,7 +62,7 @@ func (a *AwsConsumer) ReadConfiguration() error {
 }
 
 // AssumeRole performs this for the give rule
-func (a *AwsConsumer) AssumeRole(rule *Rule, name string) (*sts.Credentials, error) {
+func (a *AwsConsumer) AssumeRole(ctx context.Context, rule *Rule, name string) (*sts.Credentials, error) {
 	duration := rule.Duration
 	if duration == 0 {
 		duration = a.Config.Duration
@@ -81,13 +82,15 @@ func (a *AwsConsumer) AssumeRole(rule *Rule, name string) (*sts.Credentials, err
 }
 
 // RetrieveRulesFromRoleTags checks the IAM role for further rules configured through tags
-func (a *AwsConsumer) RetrieveRulesFromRoleTags(roleArn string) ([]Rule, error) {
+func (a *AwsConsumer) RetrieveRulesFromRoleTags(ctx context.Context, roleArn string) ([]Rule, error) {
+	logger := Logger(ctx)
+
 	validRole := regexp.MustCompile(`^arn:aws:iam::\d{12}:role/[a-zA-Z0-9-_]+$`)
 	if !validRole.MatchString(roleArn) {
 		return nil, fmt.Errorf("invalid role format")
 	}
 
-	log.Debugf("GetRole %s", roleArn[31:])
+	logger.Debugf("GetRole %s", roleArn[31:])
 	result, err := a.AWS.GetRole(&iam.GetRoleInput{
 		RoleName: aws.String(roleArn[31:]),
 	})

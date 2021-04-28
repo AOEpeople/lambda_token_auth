@@ -5,6 +5,7 @@
 package mock
 
 import (
+	context "context"
 	reflect "reflect"
 	auth "token_authorizer"
 
@@ -36,21 +37,21 @@ func (m *MockAwsConsumerInterface) EXPECT() *MockAwsConsumerInterfaceMockRecorde
 }
 
 // AssumeRole mocks base method.
-func (m *MockAwsConsumerInterface) AssumeRole(rule *auth.Rule, name string) (*sts.Credentials, error) {
+func (m *MockAwsConsumerInterface) AssumeRole(ctx context.Context, rule *auth.Rule, name string) (*sts.Credentials, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "AssumeRole", rule, name)
+	ret := m.ctrl.Call(m, "AssumeRole", ctx, rule, name)
 	ret0, _ := ret[0].(*sts.Credentials)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // AssumeRole indicates an expected call of AssumeRole.
-func (mr *MockAwsConsumerInterfaceMockRecorder) AssumeRole(rule, name interface{}) *gomock.Call {
+func (mr *MockAwsConsumerInterfaceMockRecorder) AssumeRole(ctx, rule, name interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AssumeRole", reflect.TypeOf((*MockAwsConsumerInterface)(nil).AssumeRole), rule, name)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AssumeRole", reflect.TypeOf((*MockAwsConsumerInterface)(nil).AssumeRole), ctx, rule, name)
 }
 
-// JwksUrl mocks base method.
+// JwksURL mocks base method.
 func (m *MockAwsConsumerInterface) JwksURL() string {
 	m.ctrl.T.Helper()
 	ret := m.ctrl.Call(m, "JwksURL")
@@ -58,8 +59,8 @@ func (m *MockAwsConsumerInterface) JwksURL() string {
 	return ret0
 }
 
-// JwksUrl indicates an expected call of JwksUrl.
-func (mr *MockAwsConsumerInterfaceMockRecorder) JwksUrl() *gomock.Call {
+// JwksURL indicates an expected call of JwksURL.
+func (mr *MockAwsConsumerInterfaceMockRecorder) JwksURL() *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "JwksURL", reflect.TypeOf((*MockAwsConsumerInterface)(nil).JwksURL))
 }
@@ -79,18 +80,18 @@ func (mr *MockAwsConsumerInterfaceMockRecorder) ReadConfiguration() *gomock.Call
 }
 
 // RetrieveRulesFromRoleTags mocks base method.
-func (m *MockAwsConsumerInterface) RetrieveRulesFromRoleTags(role string) ([]auth.Rule, error) {
+func (m *MockAwsConsumerInterface) RetrieveRulesFromRoleTags(ctx context.Context, role string) ([]auth.Rule, error) {
 	m.ctrl.T.Helper()
-	ret := m.ctrl.Call(m, "RetrieveRulesFromRoleTags", role)
+	ret := m.ctrl.Call(m, "RetrieveRulesFromRoleTags", ctx, role)
 	ret0, _ := ret[0].([]auth.Rule)
 	ret1, _ := ret[1].(error)
 	return ret0, ret1
 }
 
 // RetrieveRulesFromRoleTags indicates an expected call of RetrieveRulesFromRoleTags.
-func (mr *MockAwsConsumerInterfaceMockRecorder) RetrieveRulesFromRoleTags(role interface{}) *gomock.Call {
+func (mr *MockAwsConsumerInterfaceMockRecorder) RetrieveRulesFromRoleTags(ctx, role interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
-	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RetrieveRulesFromRoleTags", reflect.TypeOf((*MockAwsConsumerInterface)(nil).RetrieveRulesFromRoleTags), role)
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "RetrieveRulesFromRoleTags", reflect.TypeOf((*MockAwsConsumerInterface)(nil).RetrieveRulesFromRoleTags), ctx, role)
 }
 
 // Rules mocks base method.

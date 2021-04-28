@@ -11,7 +11,7 @@ func Logger(ctx context.Context) *log.Entry {
 	if ctx == nil {
 		return logger
 	}
-	if ctxRqID, ok := ctx.Value(requestIDKey).(string); ok {
+	if ctxRqID, ok := ctx.Value("awsRequestId").(string); ok {
 		logger = log.WithFields(log.Fields{
 			"request-id": ctxRqID,
 		})

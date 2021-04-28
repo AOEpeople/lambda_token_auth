@@ -1,6 +1,7 @@
 package auth_test
 
 import (
+	"context"
 	"encoding/base64"
 	"fmt"
 	"github.com/aws/aws-sdk-go/aws"
@@ -71,6 +72,7 @@ func TestAwsConsumer_ReadConfiguration(t *testing.T) {
 }
 
 func TestAwsConsumer_AssumeRole(t *testing.T) {
+	ctx := context.TODO()
 
 	t.Run("happy path", func(t *testing.T) {
 		ctrl := gomock.NewController(t)
@@ -89,7 +91,7 @@ func TestAwsConsumer_AssumeRole(t *testing.T) {
 			AWS:    serviceWrapper,
 			Config: &auth.Config{},
 		}
-		credentials, err := consumer.AssumeRole(&auth.Rule{
+		credentials, err := consumer.AssumeRole(ctx, &auth.Rule{
 			Role: "role:arn",
 		}, "one")
 		assert.NoError(t, err)
@@ -107,7 +109,7 @@ func TestAwsConsumer_AssumeRole(t *testing.T) {
 			AWS:    serviceWrapper,
 			Config: &auth.Config{},
 		}
-		credentials, err := consumer.AssumeRole(&auth.Rule{
+		credentials, err := consumer.AssumeRole(ctx, &auth.Rule{
 			Role: "role:arn",
 		}, "one")
 		assert.Error(t, err)
@@ -116,11 +118,13 @@ func TestAwsConsumer_AssumeRole(t *testing.T) {
 }
 
 func TestAwsConsumer_RetrieveRulesFromRoleTags(t *testing.T) {
+	ctx := context.TODO()
+
 	t.Run("invalid arn", func(t *testing.T) {
 		consumer := auth.AwsConsumer{
 			Config: &auth.Config{},
 		}
-		rules, err := consumer.RetrieveRulesFromRoleTags("foooo")
+		rules, err := consumer.RetrieveRulesFromRoleTags(ctx,"foooo")
 		assert.Error(t, err)
 		assert.Nil(t, rules)
 	})
@@ -146,7 +150,7 @@ func TestAwsConsumer_RetrieveRulesFromRoleTags(t *testing.T) {
 				RoleAnnotationPrefix:   "token_auth/1",
 			},
 		}
-		credentials, err := consumer.RetrieveRulesFromRoleTags("arn:aws:iam::012345678910:role/assume-me")
+		credentials, err := consumer.RetrieveRulesFromRoleTags(ctx,"arn:aws:iam::012345678910:role/assume-me")
 		assert.NoError(t, err)
 		assert.NotEmpty(t, credentials)
 		assert.Equal(t, 1, len(credentials))
@@ -174,7 +178,7 @@ func TestAwsConsumer_RetrieveRulesFromRoleTags(t *testing.T) {
 				RoleAnnotationsEnabled: false,
 			},
 		}
-		credentials, err := consumer.RetrieveRulesFromRoleTags("arn:aws:iam::012345678910:role/assume-me")
+		credentials, err := consumer.RetrieveRulesFromRoleTags(ctx,"arn:aws:iam::012345678910:role/assume-me")
 		assert.NoError(t, err)
 		assert.Empty(t, credentials)
 	})
@@ -201,7 +205,7 @@ func TestAwsConsumer_RetrieveRulesFromRoleTags(t *testing.T) {
 				RoleAnnotationPrefix:   "token_prefix/",
 			},
 		}
-		credentials, err := consumer.RetrieveRulesFromRoleTags("arn:aws:iam::012345678910:role/assume-me")
+		credentials, err := consumer.RetrieveRulesFromRoleTags(ctx,"arn:aws:iam::012345678910:role/assume-me")
 		assert.NoError(t, err)
 		assert.Empty(t, credentials)
 	})
@@ -217,7 +221,7 @@ func TestAwsConsumer_RetrieveRulesFromRoleTags(t *testing.T) {
 			AWS:    serviceWrapper,
 			Config: &auth.Config{},
 		}
-		credentials, err := consumer.RetrieveRulesFromRoleTags("arn:aws:iam::012345678910:role/assume-me")
+		credentials, err := consumer.RetrieveRulesFromRoleTags(ctx,"arn:aws:iam::012345678910:role/assume-me")
 		assert.Error(t, err)
 		assert.Empty(t, credentials)
 	})
@@ -242,7 +246,7 @@ func TestAwsConsumer_RetrieveRulesFromRoleTags(t *testing.T) {
 				RoleAnnotationsEnabled: true,
 			},
 		}
-		credentials, err := consumer.RetrieveRulesFromRoleTags("arn:aws:iam::012345678910:role/assume-me")
+		credentials, err := consumer.RetrieveRulesFromRoleTags(ctx,"arn:aws:iam::012345678910:role/assume-me")
 		assert.NoError(t, err)
 		assert.Empty(t, credentials)
 	})

@@ -55,8 +55,8 @@ func TestAuthorizationHandler(t *testing.T) {
 		validator.EXPECT().ValidateClaimsForRule(gomock.Any(), gomock.Eq(&claims), gomock.Eq("one"), gomock.Eq(rules)).Return(&rules[0], nil)
 
 		consumer := mock.NewMockAwsConsumerInterface(ctrl)
-		consumer.EXPECT().RetrieveRulesFromRoleTags(gomock.Eq("one")).Return(nil, nil)
-		consumer.EXPECT().AssumeRole(gomock.Eq(&rules[0]), gomock.Eq("hans")).Return(&sts.Credentials{}, nil)
+		consumer.EXPECT().RetrieveRulesFromRoleTags(gomock.Any(), gomock.Eq("one")).Return(nil, nil)
+		consumer.EXPECT().AssumeRole(gomock.Any(), gomock.Eq(&rules[0]), gomock.Eq("hans")).Return(&sts.Credentials{}, nil)
 		consumer.EXPECT().Rules().Return(rules)
 
 		handler := auth.NewHandler(consumer, validator)
@@ -91,8 +91,8 @@ func TestAuthorizationHandler(t *testing.T) {
 		validator.EXPECT().ValidateClaimsForRule(gomock.Any(), gomock.Eq(&claims), gomock.Eq("one"), gomock.Eq(iamRules)).Return(&iamRules[0], nil)
 
 		consumer := mock.NewMockAwsConsumerInterface(ctrl)
-		consumer.EXPECT().RetrieveRulesFromRoleTags(gomock.Eq("one")).Return(iamRules, nil)
-		consumer.EXPECT().AssumeRole(gomock.Eq(&iamRules[0]), gomock.Eq("hans")).Return(&sts.Credentials{}, nil)
+		consumer.EXPECT().RetrieveRulesFromRoleTags(gomock.Any(), gomock.Eq("one")).Return(iamRules, nil)
+		consumer.EXPECT().AssumeRole(gomock.Any(), gomock.Eq(&iamRules[0]), gomock.Eq("hans")).Return(&sts.Credentials{}, nil)
 		consumer.EXPECT().Rules().Return(globalRules)
 
 		handler := auth.NewHandler(consumer, validator)
