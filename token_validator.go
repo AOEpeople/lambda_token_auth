@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"github.com/MicahParks/keyfunc"
 	"github.com/buger/jsonparser"
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt"
 	log "github.com/sirupsen/logrus"
 	"strings"
 )
@@ -34,7 +34,7 @@ func NewTokenValidator(jwksURL string) *TokenValidator {
 
 // TokenValidator implements a TokenValidatorInterface validating jwt tokens with a remote server
 type TokenValidator struct {
-	jwks *keyfunc.JWKS
+	jwks *keyfunc.JWKs
 }
 
 // RetrieveClaimsFromToken validate the token and get all included claims
