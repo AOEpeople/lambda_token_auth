@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	"github.com/aws/aws-sdk-go/service/sts"
-	"github.com/dgrijalva/jwt-go"
+	"github.com/golang-jwt/jwt"
 	auth "token_authorizer"
 	"token_authorizer/mock"
 
