@@ -11,9 +11,14 @@ The lambda function is configured through environment variables, and a JSON docu
 
 ### Environment variables
 
-* `CONFIG_BUCKET` - (required) the S3 bucket name which contains the related configuration object
-* `CONFIG_KEY` - (required) the S3 object key which contains the JSON configuration
+* `CONFIG_BUCKET` - (optional) the S3 bucket name which contains the related configuration object
+* `CONFIG_KEY` - (optional) the S3 object key which contains the JSON configuration
+* `CONFIG_ROLEANNOTATIONSENABLED` - (optional) Also fetch IAM Role tags with could contain rules
+* `CONFIG_JWKSURL` - (optional) URL which contains required JWKs key information
+* `CONFIG_REGION` - (optional) AWS Region
 * `LOGLEVEL` - (optional) loglevel - allowed values: Trace, Debug, Info, Warning, Error, Fatal and Panic
+
+Please note: these settings must be either configured via an file in the S3 Bucket or via environment variables.
 
 ### JSON configuration
 

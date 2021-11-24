@@ -39,9 +39,11 @@ func NewAwsConsumer(config *Config) (*AwsConsumer, error) {
 		AWS:    &AwsServiceWrapper{},
 		Config: config,
 	}
-	err := consumer.ReadConfiguration()
-	if err != nil {
-		return nil, err
+	if config.Bucket != "" && config.ObjectKey != "" {
+		err := consumer.ReadConfiguration()
+		if err != nil {
+			return nil, err
+		}
 	}
 	return consumer, nil
 }
