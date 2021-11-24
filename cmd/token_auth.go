@@ -22,7 +22,7 @@ func init() {
 	bucket := os.Getenv("CONFIG_BUCKET")
 	key := os.Getenv("CONFIG_KEY")
 	if bucket == "" || key == "" {
-		log.Fatalf("CONFIG_BUCKET or CONFIG_KEY empty")
+		log.Infof("CONFIG_BUCKET or CONFIG_KEY empty")
 	}
 
 	config := &auth.Config{
