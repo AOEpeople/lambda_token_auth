@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"github.com/MicahParks/keyfunc"
 	"github.com/buger/jsonparser"
-	"github.com/golang-jwt/jwt"
+	"github.com/golang-jwt/jwt/v4"
 	log "github.com/sirupsen/logrus"
 	"strings"
 )
@@ -39,7 +39,8 @@ type TokenValidator struct {
 
 // RetrieveClaimsFromToken validate the token and get all included claims
 func (t *TokenValidator) RetrieveClaimsFromToken(ctx context.Context, tokenInput string) (*Claims, error) {
-	token, err := jwt.ParseWithClaims(tokenInput, &jwt.StandardClaims{}, t.jwks.KeyFunc)
+
+	token, err := jwt.ParseWithClaims(tokenInput, &jwt.StandardClaims{}, t.jwks.Keyfunc)
 
 	if err != nil {
 		return nil, err
@@ -64,7 +65,7 @@ func (t *TokenValidator) RetrieveClaimsFromToken(ctx context.Context, tokenInput
 
 	claims := &Claims{
 		ClaimsJSON:     claimsJSON,
-		StandardClaims: token.Claims.(*jwt.StandardClaims),
+		RegisteredClaims: token.Claims.(*jwt.RegisteredClaims),
 	}
 
 	return claims, nil
