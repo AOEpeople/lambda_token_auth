@@ -4,6 +4,7 @@ import (
 	"github.com/aws/aws-lambda-go/lambda"
 	log "github.com/sirupsen/logrus"
 	"os"
+	"strconv"
 	auth "token_authorizer"
 )
 
@@ -25,11 +26,18 @@ func init() {
 		log.Infof("CONFIG_BUCKET or CONFIG_KEY empty")
 	}
 
+	roleAnnotationsEnabled, err := strconv.ParseBool(os.Getenv("CONFIG_ROLEANNOTATIONSENABLED"))
+	if err != nil {
+		roleAnnotationsEnabled = false
+	}
+
 	config := &auth.Config{
 		Bucket:                 bucket,
 		ObjectKey:              key,
+		JwksURL: 				os.Getenv("CONFIG_JWKSURL"),
+		Region: 				os.Getenv("CONFIG_REGION"),
 		Duration:               3600,
-		RoleAnnotationsEnabled: false,
+		RoleAnnotationsEnabled: roleAnnotationsEnabled,
 		RoleAnnotationPrefix:   "token_auth/",
 	}
 
