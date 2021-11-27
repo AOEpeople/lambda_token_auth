@@ -3,6 +3,7 @@ package auth
 import (
 	"bytes"
 	"context"
+	"encoding/base64"
 	"fmt"
 	"github.com/MicahParks/keyfunc"
 	"github.com/buger/jsonparser"
@@ -40,7 +41,7 @@ type TokenValidator struct {
 // RetrieveClaimsFromToken validate the token and get all included claims
 func (t *TokenValidator) RetrieveClaimsFromToken(ctx context.Context, tokenInput string) (*Claims, error) {
 
-	token, err := jwt.ParseWithClaims(tokenInput, &jwt.StandardClaims{}, t.jwks.Keyfunc)
+	token, err := jwt.ParseWithClaims(tokenInput, &jwt.RegisteredClaims{}, t.jwks.Keyfunc)
 
 	if err != nil {
 		return nil, err
@@ -57,7 +58,7 @@ func (t *TokenValidator) RetrieveClaimsFromToken(ctx context.Context, tokenInput
 		return nil, fmt.Errorf("error splitting token into parts")
 	}
 
-	claimsJSON, err := jwt.DecodeSegment(parts[1])
+	claimsJSON, err := base64.RawURLEncoding.DecodeString(parts[1])
 
 	if err != nil {
 		return nil, fmt.Errorf("error decoding claims section: %s", err)
