@@ -9,7 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/sts"
 	"github.com/golang/mock/gomock"
 	"github.com/stretchr/testify/assert"
-	"io/ioutil"
+	"io"
 	"strings"
 	"testing"
 	auth "token_authorizer"
@@ -26,7 +26,7 @@ func TestAwsConsumer_ReadConfiguration(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		r := ioutil.NopCloser(strings.NewReader("{\"jwks_url\": \"https://example.org\"}"))
+		r := io.NopCloser(strings.NewReader("{\"jwks_url\": \"https://example.org\"}"))
 
 		serviceWrapper := mock.NewMockAwsServiceWrapperInterface(ctrl)
 		serviceWrapper.EXPECT().GetS3Object(gomock.Any(), gomock.Any()).Return(r, nil)
@@ -57,7 +57,7 @@ func TestAwsConsumer_ReadConfiguration(t *testing.T) {
 		ctrl := gomock.NewController(t)
 		defer ctrl.Finish()
 
-		r := ioutil.NopCloser(strings.NewReader("{\"jwks_url\"}"))
+		r := io.NopCloser(strings.NewReader("{\"jwks_url\"}"))
 
 		serviceWrapper := mock.NewMockAwsServiceWrapperInterface(ctrl)
 		serviceWrapper.EXPECT().GetS3Object(gomock.Any(), gomock.Any()).Return(r, nil)

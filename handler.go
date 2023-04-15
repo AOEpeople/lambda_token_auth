@@ -28,8 +28,8 @@ type EventQuery struct {
 
 // Claims all claim fields a token from Gitlab could have
 type Claims struct {
-	ClaimsJSON     []byte
-	StandardClaims *jwt.StandardClaims
+	ClaimsJSON       []byte
+	RegisteredClaims *jwt.RegisteredClaims
 }
 
 // Rule represents a single claim to role mapping
@@ -73,8 +73,8 @@ func NewHandler(consumer AwsConsumerInterface, validator TokenValidatorInterface
 			return RespondError(ctx, fmt.Errorf("unable to find matching role for the given token"), http.StatusUnauthorized)
 		}
 
-		logger.Infof("Retrieved request from %s to assume role %s", claims.StandardClaims.Subject, role.Role)
-		credentials, err := consumer.AssumeRole(ctx, role, claims.StandardClaims.Subject)
+		logger.Infof("Retrieved request from %s to assume role %s", claims.RegisteredClaims.Subject, role.Role)
+		credentials, err := consumer.AssumeRole(ctx, role, claims.RegisteredClaims.Subject)
 		if err != nil {
 			return RespondError(ctx, err, http.StatusInternalServerError)
 		}

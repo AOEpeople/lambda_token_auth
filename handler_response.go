@@ -56,6 +56,6 @@ func RespondJSON(ctx context.Context, credentials *sts.Credentials) (HandlerResp
 		Headers: map[string]string{
 			"Content-Type": "application/json",
 		},
-		Body: fmt.Sprintf("%s", response),
+		Body: string(response),
 	}, nil
 }

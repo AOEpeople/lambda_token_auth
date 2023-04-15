@@ -46,7 +46,7 @@ func TestAuthorizationHandler(t *testing.T) {
 		})
 
 		claims := auth.Claims{ClaimsJSON: rules[0].ClaimValues,
-			StandardClaims: &jwt.StandardClaims{
+			RegisteredClaims: &jwt.RegisteredClaims{
 				Subject: "hans",
 			}}
 
@@ -82,7 +82,7 @@ func TestAuthorizationHandler(t *testing.T) {
 		})
 
 		claims := auth.Claims{ClaimsJSON: iamRules[0].ClaimValues,
-			StandardClaims: &jwt.StandardClaims{
+			RegisteredClaims: &jwt.RegisteredClaims{
 				Subject: "hans",
 			}}
 
