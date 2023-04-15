@@ -63,14 +63,21 @@ func (a *AwsConsumer) ReadConfiguration() error {
 	return nil
 }
 
+func (a *AwsConsumer) sessionName(name string) string {
+	if len(name) > 64 {
+		return name[len(name)-64:]
+	}
+	return name
+}
+
 // AssumeRole performs this for the give rule
 func (a *AwsConsumer) AssumeRole(ctx context.Context, rule *Rule, name string) (*sts.Credentials, error) {
 	duration := rule.Duration
 	if duration == 0 {
 		duration = a.Config.Duration
 	}
+	sessionName := a.sessionName(name)
 	roleToAssumeArn := rule.Role
-	sessionName := name
 	result, err := a.AWS.AssumeRole(&sts.AssumeRoleInput{
 		RoleArn:         &roleToAssumeArn,
 		RoleSessionName: &sessionName,
