@@ -64,6 +64,9 @@ func (a *AwsConsumer) ReadConfiguration() error {
 }
 
 func (a *AwsConsumer) SessionName(name string) string {
+	invalidChars := regexp.MustCompile(`[^[:word:]+=,.@-]`)
+	name = invalidChars.ReplaceAllLiteralString(name, "")
+
 	if len(name) > 64 {
 		return name[len(name)-64:]
 	}
