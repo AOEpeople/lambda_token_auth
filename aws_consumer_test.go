@@ -251,3 +251,23 @@ func TestAwsConsumer_RetrieveRulesFromRoleTags(t *testing.T) {
 		assert.Empty(t, credentials)
 	})
 }
+
+func TestAwsConsumer_SessionName(t *testing.T) {
+	cases := []struct {
+		name     string
+		expected string
+	}{
+		{"hello", "hello"},
+		{"1234567890123456789012345678901234567890123456789012345678901234", "1234567890123456789012345678901234567890123456789012345678901234"},
+		{"12345678901234567890123456789012345678901234567890123456789012345", "2345678901234567890123456789012345678901234567890123456789012345"},
+	}
+	consumer := auth.AwsConsumer{}
+	for _, c := range cases {
+		t.Run(fmt.Sprintf("sessionName(%s) returns %s", c.name, c.expected), func(t *testing.T) {
+			var result = consumer.SessionName(c.name)
+			if result != c.expected {
+				t.Errorf("sessionName(%s) returned %s, expected %s", c.name, result, c.expected)
+			}
+		})
+	}
+}

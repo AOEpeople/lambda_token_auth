@@ -2,7 +2,17 @@ package auth_test
 
 import (
 	"context"
+	"crypto/rand"
+	"crypto/rsa"
+	"encoding/base64"
+	"encoding/json"
+	"fmt"
+	"github.com/golang-jwt/jwt/v4"
+	"math/big"
+	"net/http"
+	"net/http/httptest"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	auth "token_authorizer"
@@ -12,6 +22,87 @@ type TestCase struct {
 	Claims  string
 	Rules   string
 	IsMatch bool
+}
+
+type JWK struct {
+	Kty string `json:"kty"`
+	Kid string `json:"kid"`
+	N   string `json:"n"`
+	E   string `json:"e"`
+}
+
+type JWKSet struct {
+	Keys []JWK `json:"keys"`
+}
+
+func TestTokenValidator_RetrieveClaimsFromToken(t *testing.T) {
+	privateKey, err := rsa.GenerateKey(rand.Reader, 2048)
+	if err != nil {
+		t.Fatalf("Failed to generate RSA key pair: %v", err)
+	}
+	publicKey := &privateKey.PublicKey
+
+	jwk := JWK{
+		Kty: "RSA",
+		Kid: "key-id",
+		N:   base64.RawURLEncoding.EncodeToString(publicKey.N.Bytes()),
+		E:   base64.RawURLEncoding.EncodeToString(big.NewInt(int64(publicKey.E)).Bytes()),
+	}
+
+	jwkSet := JWKSet{
+		Keys: []JWK{jwk},
+	}
+
+	token := jwt.NewWithClaims(jwt.SigningMethodRS256, jwt.MapClaims{
+		"iss":             "https://issuer.example.com",
+		"sub":             "1234567890",
+		"aud":             []string{"tolen_validation_test"},
+		"exp":             time.Now().Add(time.Hour).Unix(),
+		"nbf":             time.Now().Unix(),
+		"iat":             time.Now().Unix(),
+		"jti":             "abcdef123456",
+		"namespace_id":    "12343323",
+		"namespace_path":  "AOEpeople",
+		"project_id":      "3433",
+		"project_path":    "AOEpeople/lambda_token_auth",
+		"user_id":         "999683",
+		"pipeline_id":     "999683",
+		"pipeline_source": "push",
+		"job_id":          "232558",
+		"ref":             "main",
+		"ref_type":        "branch",
+		"ref_protected":   "true",
+	})
+	token.Header["kid"] = jwk.Kid
+	signedToken, err := token.SignedString(privateKey)
+
+	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		switch r.URL.Path {
+		case "/jwks":
+			w.Header().Set("Content-Type", "application/json")
+			json.NewEncoder(w).Encode(jwkSet)
+		default:
+			w.WriteHeader(http.StatusNotFound)
+			w.Write([]byte("Not found"))
+		}
+	}))
+	defer server.Close()
+
+	tokenValidator := auth.NewTokenValidator(fmt.Sprintf("%s/jwks", server.URL))
+	claims, err := tokenValidator.RetrieveClaimsFromToken(context.TODO(), signedToken)
+	if err != nil {
+		t.Errorf("Function returned an error: %v", err)
+	}
+
+	claimsResult := jwt.MapClaims{}
+	err = json.Unmarshal(claims.ClaimsJSON, &claimsResult)
+	if err != nil {
+		t.Errorf("Function returned an error: %v", err)
+	}
+
+	if claimsResult["project_path"] != "AOEpeople/lambda_token_auth" {
+		t.Errorf("Unexpected project_path %s", claimsResult["project_path"])
+	}
 }
 
 func TestTokenValidator_MatchClaimsInternal(t *testing.T) {

@@ -40,8 +40,12 @@ type TokenValidator struct {
 
 // RetrieveClaimsFromToken validate the token and get all included claims
 func (t *TokenValidator) RetrieveClaimsFromToken(ctx context.Context, tokenInput string) (*Claims, error) {
-	token, err := jwt.ParseWithClaims(tokenInput, &jwt.MapClaims{}, t.jwks.Keyfunc)
+	tokenClaims, err := jwt.ParseWithClaims(tokenInput, &jwt.MapClaims{}, t.jwks.Keyfunc)
+	if err != nil {
+		return nil, err
+	}
 
+	token, err := jwt.ParseWithClaims(tokenInput, &jwt.RegisteredClaims{}, t.jwks.Keyfunc)
 	if err != nil {
 		return nil, err
 	}
@@ -57,7 +61,7 @@ func (t *TokenValidator) RetrieveClaimsFromToken(ctx context.Context, tokenInput
 		return nil, fmt.Errorf("error splitting token into parts")
 	}
 
-	claimsJSON, err := json.Marshal(token.Claims.(jwt.MapClaims))
+	claimsJSON, err := json.Marshal(tokenClaims.Claims)
 
 	if err != nil {
 		return nil, fmt.Errorf("error decoding claims section: %s", err)
