@@ -40,7 +40,7 @@ type TokenValidator struct {
 
 // RetrieveClaimsFromToken validate the token and get all included claims
 func (t *TokenValidator) RetrieveClaimsFromToken(ctx context.Context, tokenInput string) (*Claims, error) {
-	token, err := jwt.ParseWithClaims(tokenInput, &jwt.RegisteredClaims{}, t.jwks.Keyfunc)
+	token, err := jwt.ParseWithClaims(tokenInput, &jwt.MapClaims{}, t.jwks.Keyfunc)
 
 	if err != nil {
 		return nil, err
