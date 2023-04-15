@@ -6,7 +6,7 @@ import (
 	"fmt"
 	"github.com/MicahParks/keyfunc"
 	"github.com/buger/jsonparser"
-	"github.com/golang-jwt/jwt"
+	"github.com/golang-jwt/jwt/v4"
 	log "github.com/sirupsen/logrus"
 	"strings"
 )
@@ -21,7 +21,7 @@ type TokenValidatorInterface interface {
 // NewTokenValidator creates a new TokenValidator for a given system
 func NewTokenValidator(jwksURL string) *TokenValidator {
 	log.Debugf("Using %s for JWK retrival", jwksURL)
-	jwks, err := keyfunc.Get(jwksURL)
+	jwks, err := keyfunc.Get(jwksURL, keyfunc.Options{})
 	if err != nil {
 		log.Fatalf("Failed to get the JWKS from the given URL.\nError: %v", err)
 	}
@@ -34,12 +34,12 @@ func NewTokenValidator(jwksURL string) *TokenValidator {
 
 // TokenValidator implements a TokenValidatorInterface validating jwt tokens with a remote server
 type TokenValidator struct {
-	jwks *keyfunc.JWKs
+	jwks *keyfunc.JWKS
 }
 
 // RetrieveClaimsFromToken validate the token and get all included claims
 func (t *TokenValidator) RetrieveClaimsFromToken(ctx context.Context, tokenInput string) (*Claims, error) {
-	token, err := jwt.ParseWithClaims(tokenInput, &jwt.StandardClaims{}, t.jwks.KeyFunc)
+	token, err := jwt.ParseWithClaims(tokenInput, &jwt.StandardClaims{}, t.jwks.Keyfunc)
 
 	if err != nil {
 		return nil, err
