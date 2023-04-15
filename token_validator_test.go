@@ -75,15 +75,24 @@ func TestTokenValidator_RetrieveClaimsFromToken(t *testing.T) {
 	})
 	token.Header["kid"] = jwk.Kid
 	signedToken, err := token.SignedString(privateKey)
+	if err != nil {
+		t.Errorf("Error signing token: %v", err)
+	}
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
 		case "/jwks":
 			w.Header().Set("Content-Type", "application/json")
-			json.NewEncoder(w).Encode(jwkSet)
+			err := json.NewEncoder(w).Encode(jwkSet)
+			if err != nil {
+				t.Errorf("Error encoding jwks: %v", err)
+			}
 		default:
 			w.WriteHeader(http.StatusNotFound)
-			w.Write([]byte("Not found"))
+			_, err := w.Write([]byte("Not found"))
+			if err != nil {
+				t.Errorf("Error writing response jwks: %v", err)
+			}
 		}
 	}))
 	defer server.Close()
