@@ -11,6 +11,7 @@ import (
 	"math/big"
 	"net/http"
 	"net/http/httptest"
+	"strings"
 	"testing"
 	"time"
 
@@ -74,10 +75,6 @@ func TestTokenValidator_RetrieveClaimsFromToken(t *testing.T) {
 		"ref_protected":   "true",
 	})
 	token.Header["kid"] = jwk.Kid
-	signedToken, err := token.SignedString(privateKey)
-	if err != nil {
-		t.Errorf("Error signing token: %v", err)
-	}
 
 	server := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		switch r.URL.Path {
@@ -98,20 +95,60 @@ func TestTokenValidator_RetrieveClaimsFromToken(t *testing.T) {
 	defer server.Close()
 
 	tokenValidator := auth.NewTokenValidator(fmt.Sprintf("%s/jwks", server.URL))
-	claims, err := tokenValidator.RetrieveClaimsFromToken(context.TODO(), signedToken)
-	if err != nil {
-		t.Errorf("Function returned an error: %v", err)
-	}
 
-	claimsResult := jwt.MapClaims{}
-	err = json.Unmarshal(claims.ClaimsJSON, &claimsResult)
-	if err != nil {
-		t.Errorf("Function returned an error: %v", err)
-	}
+	t.Run("passes valid token", func(t *testing.T) {
+		signedToken, err := token.SignedString(privateKey)
+		if err != nil {
+			t.Errorf("Error signing token: %v", err)
+		}
+		claims, err := tokenValidator.RetrieveClaimsFromToken(context.TODO(), signedToken)
+		if err != nil {
+			t.Errorf("Function returned an error: %v", err)
+		}
 
-	if claimsResult["project_path"] != "AOEpeople/lambda_token_auth" {
-		t.Errorf("Unexpected project_path %s", claimsResult["project_path"])
-	}
+		claimsResult := jwt.MapClaims{}
+		err = json.Unmarshal(claims.ClaimsJSON, &claimsResult)
+		if err != nil {
+			t.Errorf("Function returned an error: %v", err)
+		}
+
+		if claimsResult["project_path"] != "AOEpeople/lambda_token_auth" {
+			t.Errorf("Unexpected project_path %s", claimsResult["project_path"])
+		}
+	})
+
+	t.Run("breaks on wrong signature", func(t *testing.T) {
+		randomPrivateKey, _ := rsa.GenerateKey(rand.Reader, 2048)
+		signedToken, _ := token.SignedString(randomPrivateKey)
+		_, err = tokenValidator.RetrieveClaimsFromToken(context.TODO(), signedToken)
+		if err == nil || !strings.Contains(err.Error(), "verification error") {
+			t.Errorf("Function returned an error: %v", err)
+		}
+	})
+
+	t.Run("breaks on missing signature", func(t *testing.T) {
+		_, err = tokenValidator.RetrieveClaimsFromToken(context.TODO(), token.Raw)
+		if err == nil || !strings.Contains(err.Error(), "invalid") {
+			t.Errorf("Function returned an unexpected error: %v", err)
+		}
+	})
+
+	t.Run("breaks on expired tokens", func(t *testing.T) {
+		brokenToken := jwt.NewWithClaims(jwt.SigningMethodRS256, jwt.MapClaims{
+			"exp": time.Now().Add(-1 * time.Hour).Unix(),
+			"nbf": time.Now().Add(-2 * time.Hour).Unix(),
+			"iat": time.Now().Unix(),
+		})
+		brokenToken.Header["kid"] = jwk.Kid
+		signedToken, err := brokenToken.SignedString(privateKey)
+		if err != nil {
+			t.Errorf("Error signing token: %v", err)
+		}
+		_, err = tokenValidator.RetrieveClaimsFromToken(context.TODO(), signedToken)
+		if err == nil || !strings.Contains(err.Error(), "expired") {
+			t.Errorf("Function returned an unexpected error: %v", err)
+		}
+	})
 }
 
 func TestTokenValidator_MatchClaimsInternal(t *testing.T) {
