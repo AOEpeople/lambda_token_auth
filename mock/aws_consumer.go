@@ -51,6 +51,34 @@ func (mr *MockAwsConsumerInterfaceMockRecorder) AssumeRole(ctx, rule, name inter
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AssumeRole", reflect.TypeOf((*MockAwsConsumerInterface)(nil).AssumeRole), ctx, rule, name)
 }
 
+// BoundAudience mocks base method.
+func (m *MockAwsConsumerInterface) BoundAudience() string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BoundAudience")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// BoundAudience indicates an expected call of BoundAudience.
+func (mr *MockAwsConsumerInterfaceMockRecorder) BoundAudience() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BoundAudience", reflect.TypeOf((*MockAwsConsumerInterface)(nil).BoundAudience))
+}
+
+// BoundIssuer mocks base method.
+func (m *MockAwsConsumerInterface) BoundIssuer() string {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BoundIssuer")
+	ret0, _ := ret[0].(string)
+	return ret0
+}
+
+// BoundIssuer indicates an expected call of BoundIssuer.
+func (mr *MockAwsConsumerInterfaceMockRecorder) BoundIssuer() *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BoundIssuer", reflect.TypeOf((*MockAwsConsumerInterface)(nil).BoundIssuer))
+}
+
 // JwksURL mocks base method.
 func (m *MockAwsConsumerInterface) JwksURL() string {
 	m.ctrl.T.Helper()

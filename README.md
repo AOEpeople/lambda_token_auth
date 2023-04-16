@@ -18,6 +18,8 @@ The lambda function is configured through environment variables, and a JSON docu
 * `CONFIG_ROLEANNOTATIONSENABLED` - (optional) Also fetch IAM Role tags with could contain rules
 * `CONFIG_JWKSURL` - (optional) URL which contains required JWKs key information
 * `CONFIG_REGION` - (optional) AWS Region
+* `CONFIG_BOUND_ISSUER` - (optional) Token issue expected from the tokens 
+* `CONFIG_BOUND_AUDIENCE` - (optional) Token audience expected in the tokens
 * `LOGLEVEL` - (optional) loglevel - allowed values: Trace, Debug, Info, Warning, Error, Fatal and Panic
 
 Please note: these settings must be either configured via an file in the S3 Bucket or via environment variables.
@@ -28,7 +30,9 @@ Please note: these settings must be either configured via an file in the S3 Buck
 {
     "jwks_url":"https://gitlab.com/-/jwks",                          // URL which contains required JWKs key information
     "role_annotations_enabled": true,                                // Also fetch IAM Role tags with could contain rules
-    "role_annotation_prefix": "token_auth/",                         // IAM Role Tag-Prefix which is used for the embedded rules  
+    "role_annotation_prefix": "token_auth/",                         // IAM Role Tag-Prefix which is used for the embedded rules
+    "bound_issuer": "",                                              // Token issue expected from the tokens
+    "bound_audience": "",                                            // Token audience expected from the tokens
     "rules":[                                                        // List of rules which would allow the AssumeRole for certain tokens
         {
             "claim_values":{                                         // The required values which the token should present

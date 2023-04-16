@@ -25,6 +25,10 @@ type AwsConsumerInterface interface {
 	AssumeRole(ctx context.Context, rule *Rule, name string) (*sts.Credentials, error)
 	// RetrieveRulesFromRoleTags checks whether a string matches the rule format
 	RetrieveRulesFromRoleTags(ctx context.Context, role string) ([]Rule, error)
+	// BoundIssuer holds the global issue configuration
+	BoundIssuer() string
+	// BoundAudience holds the global audience configuration
+	BoundAudience() string
 }
 
 // AwsConsumer is the implementation of AwsConsumerInterface
@@ -141,4 +145,12 @@ func (a *AwsConsumer) Rules() []Rule {
 // JwksURL forwards the url from the configuration
 func (a *AwsConsumer) JwksURL() string {
 	return a.Config.JwksURL
+}
+
+func (a *AwsConsumer) BoundIssuer() string {
+	return a.Config.BoundIssuer
+}
+
+func (a *AwsConsumer) BoundAudience() string {
+	return a.Config.BoundAudience
 }

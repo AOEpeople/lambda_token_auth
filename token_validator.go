@@ -20,7 +20,7 @@ type TokenValidatorInterface interface {
 }
 
 // NewTokenValidator creates a new TokenValidator for a given system
-func NewTokenValidator(jwksURL string) *TokenValidator {
+func NewTokenValidator(jwksURL, boundIssuer, boundAudience string) *TokenValidator {
 	log.Debugf("Using %s for JWK retrival", jwksURL)
 	jwks, err := keyfunc.Get(jwksURL, keyfunc.Options{})
 	if err != nil {
@@ -28,14 +28,18 @@ func NewTokenValidator(jwksURL string) *TokenValidator {
 	}
 
 	validator := &TokenValidator{
-		jwks: jwks,
+		jwks:          jwks,
+		boundIssuer:   boundIssuer,
+		boundAudience: boundAudience,
 	}
 	return validator
 }
 
 // TokenValidator implements a TokenValidatorInterface validating jwt tokens with a remote server
 type TokenValidator struct {
-	jwks *keyfunc.JWKS
+	jwks          *keyfunc.JWKS
+	boundIssuer   string
+	boundAudience string
 }
 
 // RetrieveClaimsFromToken validate the token and get all included claims
@@ -52,6 +56,14 @@ func (t *TokenValidator) RetrieveClaimsFromToken(ctx context.Context, tokenInput
 
 	if !token.Valid {
 		return nil, fmt.Errorf("token invalid")
+	}
+
+	if t.boundIssuer != "" && !token.Claims.(*jwt.RegisteredClaims).VerifyIssuer(t.boundIssuer, true) {
+		return nil, fmt.Errorf("bound issuer %s expected", t.boundIssuer)
+	}
+
+	if t.boundAudience != "" && !token.Claims.(*jwt.RegisteredClaims).VerifyAudience(t.boundAudience, true) {
+		return nil, fmt.Errorf("bound audience %s expected", t.boundAudience)
 	}
 
 	Logger(ctx).Debugf("Raw token: %s", token.Raw)

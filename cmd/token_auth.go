@@ -34,18 +34,20 @@ func init() {
 	config := &auth.Config{
 		Bucket:                 bucket,
 		ObjectKey:              key,
-		JwksURL: 				os.Getenv("CONFIG_JWKSURL"),
-		Region: 				os.Getenv("CONFIG_REGION"),
+		JwksURL:                os.Getenv("CONFIG_JWKSURL"),
+		Region:                 os.Getenv("CONFIG_REGION"),
 		Duration:               3600,
 		RoleAnnotationsEnabled: roleAnnotationsEnabled,
 		RoleAnnotationPrefix:   "token_auth/",
+		BoundIssuer:            os.Getenv("CONFIG_BOUND_ISSUER"),
+		BoundAudience:          os.Getenv("CONFIG_BOUND_AUDIENCE"),
 	}
 
 	awsConsumer, err = auth.NewAwsConsumer(config)
 	if err != nil {
 		log.Fatalf("Error initializing: %v", err)
 	}
-	tokenValidator = auth.NewTokenValidator(awsConsumer.JwksURL())
+	tokenValidator = auth.NewTokenValidator(awsConsumer.JwksURL(), awsConsumer.BoundIssuer(), awsConsumer.BoundAudience())
 }
 
 func main() {

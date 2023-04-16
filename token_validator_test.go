@@ -94,13 +94,9 @@ func TestTokenValidator_RetrieveClaimsFromToken(t *testing.T) {
 	}))
 	defer server.Close()
 
-	tokenValidator := auth.NewTokenValidator(fmt.Sprintf("%s/jwks", server.URL))
-
+	tokenValidator := auth.NewTokenValidator(fmt.Sprintf("%s/jwks", server.URL), "https://issuer.example.com", "tolen_validation_test")
 	t.Run("passes valid token", func(t *testing.T) {
-		signedToken, err := token.SignedString(privateKey)
-		if err != nil {
-			t.Errorf("Error signing token: %v", err)
-		}
+		signedToken, _ := token.SignedString(privateKey)
 		claims, err := tokenValidator.RetrieveClaimsFromToken(context.TODO(), signedToken)
 		if err != nil {
 			t.Errorf("Function returned an error: %v", err)
@@ -114,6 +110,33 @@ func TestTokenValidator_RetrieveClaimsFromToken(t *testing.T) {
 
 		if claimsResult["project_path"] != "AOEpeople/lambda_token_auth" {
 			t.Errorf("Unexpected project_path %s", claimsResult["project_path"])
+		}
+	})
+
+	t.Run("passes when bound issuer or audience is empty", func(t *testing.T) {
+		tokenValidator := auth.NewTokenValidator(fmt.Sprintf("%s/jwks", server.URL), "", "")
+		signedToken, _ := token.SignedString(privateKey)
+		_, err := tokenValidator.RetrieveClaimsFromToken(context.TODO(), signedToken)
+		if err != nil {
+			t.Errorf("Function returned unexpected error: %v", err)
+		}
+	})
+
+	t.Run("breaks on wrong issuer", func(t *testing.T) {
+		tokenValidator := auth.NewTokenValidator(fmt.Sprintf("%s/jwks", server.URL), "https://issuer.example.org", "tolen_validation_test")
+		signedToken, _ := token.SignedString(privateKey)
+		_, err := tokenValidator.RetrieveClaimsFromToken(context.TODO(), signedToken)
+		if err == nil || !strings.Contains(err.Error(), "issuer") {
+			t.Errorf("Function returned unexpected error: %v", err)
+		}
+	})
+
+	t.Run("breaks on wrong audience", func(t *testing.T) {
+		tokenValidator := auth.NewTokenValidator(fmt.Sprintf("%s/jwks", server.URL), "https://issuer.example.com", "wrong")
+		signedToken, _ := token.SignedString(privateKey)
+		_, err := tokenValidator.RetrieveClaimsFromToken(context.TODO(), signedToken)
+		if err == nil || !strings.Contains(err.Error(), "audience") {
+			t.Errorf("Function returned unexpected error: %v", err)
 		}
 	})
 
