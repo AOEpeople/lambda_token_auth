@@ -1,4 +1,5 @@
 dist/*
+assets/*
 *.zip
 .idea
 *.out
