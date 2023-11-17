@@ -5,9 +5,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"github.com/MicahParks/keyfunc"
+	"github.com/MicahParks/keyfunc/v2"
 	"github.com/buger/jsonparser"
-	"github.com/golang-jwt/jwt/v4"
+	"github.com/golang-jwt/jwt/v5"
 	log "github.com/sirupsen/logrus"
 	"strings"
 )
@@ -44,26 +44,21 @@ type TokenValidator struct {
 
 // RetrieveClaimsFromToken validate the token and get all included claims
 func (t *TokenValidator) RetrieveClaimsFromToken(ctx context.Context, tokenInput string) (*Claims, error) {
-	tokenClaims, err := jwt.ParseWithClaims(tokenInput, &jwt.MapClaims{}, t.jwks.Keyfunc)
+
+	parser := jwt.NewParser(jwt.WithIssuer(t.boundIssuer), jwt.WithAudience(t.boundAudience))
+
+	tokenClaims, err := parser.ParseWithClaims(tokenInput, &jwt.MapClaims{}, t.jwks.Keyfunc)
 	if err != nil {
 		return nil, err
 	}
 
-	token, err := jwt.ParseWithClaims(tokenInput, &jwt.RegisteredClaims{}, t.jwks.Keyfunc)
+	token, err := parser.ParseWithClaims(tokenInput, &jwt.RegisteredClaims{}, t.jwks.Keyfunc)
 	if err != nil {
 		return nil, err
 	}
 
 	if !token.Valid {
 		return nil, fmt.Errorf("token invalid")
-	}
-
-	if t.boundIssuer != "" && !token.Claims.(*jwt.RegisteredClaims).VerifyIssuer(t.boundIssuer, true) {
-		return nil, fmt.Errorf("bound issuer %s expected", t.boundIssuer)
-	}
-
-	if t.boundAudience != "" && !token.Claims.(*jwt.RegisteredClaims).VerifyAudience(t.boundAudience, true) {
-		return nil, fmt.Errorf("bound audience %s expected", t.boundAudience)
 	}
 
 	Logger(ctx).Debugf("Raw token: %s", token.Raw)
