@@ -1,9 +1,12 @@
 module token_authorizer
 
-go 1.20
+go 1.21
+
+toolchain go1.22.1
 
 require (
 	github.com/MicahParks/keyfunc v1.9.0
+	github.com/MicahParks/keyfunc/v3 v3.3.2
 	github.com/aws/aws-lambda-go v1.46.0
 	github.com/aws/aws-sdk-go v1.50.37
 	github.com/buger/jsonparser v1.1.1
